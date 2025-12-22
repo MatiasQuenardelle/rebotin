@@ -190,8 +190,8 @@ export class Input {
             // Landscape with home button on left
             tilt = -beta;
         } else {
-            // Portrait mode (0 or 180)
-            tilt = -gamma;
+            // Portrait mode (0 or 180) - was working fine
+            tilt = gamma;
         }
 
         // Apply deadzone to prevent drift
