@@ -7,8 +7,12 @@ export class Nephew {
         this.characterName = characterName;
         this.isJulieta = characterName === 'Julieta';
 
-        // States: trapped, falling, rescued, lost
+        // States: trapped, falling, landing, rescued, lost
         this.state = 'trapped';
+
+        // Landing delay (to see parachute touch down)
+        this.landingTimer = 0;
+        this.landingDuration = 1200; // 1.2 seconds to see the landing
 
         // Falling physics
         this.fallSpeed = 1.5;
@@ -282,13 +286,34 @@ export class Nephew {
                 nephewBottom <= paddle.y + paddle.height + 10 &&
                 nephewCenterX >= paddle.x &&
                 nephewCenterX <= paddle.x + paddle.width) {
-                this.rescue();
+                // Transition to landing state (delay before celebration)
+                this.state = 'landing';
+                this.landingTimer = 0;
                 this.y = paddle.y - this.height;
             }
 
             // Check if fell off screen
             if (this.y > canvasHeight) {
                 this.state = 'lost';
+            }
+        }
+
+        // Handle landing state - show parachute folding before celebration
+        if (this.state === 'landing') {
+            this.landingTimer += deltaTime;
+
+            // Fold parachute animation
+            if (this.parachuteSize > 0) {
+                this.parachuteSize = Math.max(0, this.parachuteSize - 0.5);
+            }
+
+            // Stay on paddle
+            this.x = paddle.x + paddle.width / 2 - this.width / 2;
+            this.y = paddle.y - this.height;
+
+            // After delay, transition to rescued state with celebration
+            if (this.landingTimer >= this.landingDuration) {
+                this.rescue();
             }
         }
 
