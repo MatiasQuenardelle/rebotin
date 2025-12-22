@@ -29,8 +29,16 @@ export class Game {
         this.paddle = null;
         this.ball = null;
         this.bricks = [];
+        this.speedMultiplier = 1;
 
         this.init();
+    }
+
+    setSpeedMultiplier(multiplier) {
+        this.speedMultiplier = multiplier;
+        if (this.ball) {
+            this.ball.setSpeedMultiplier(multiplier);
+        }
     }
 
     init() {

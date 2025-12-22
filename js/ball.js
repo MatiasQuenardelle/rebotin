@@ -13,6 +13,11 @@ export class Ball {
         this.maxTrailLength = 12;
         this.canvasWidth = canvasWidth;
         this.canvasHeight = canvasHeight;
+        this.speedMultiplier = 1;
+    }
+
+    setSpeedMultiplier(multiplier) {
+        this.speedMultiplier = multiplier;
     }
 
     update(paddle) {
@@ -28,9 +33,9 @@ export class Ball {
             this.trailPositions.pop();
         }
 
-        // Move ball
-        this.x += this.dx;
-        this.y += this.dy;
+        // Move ball (apply speed multiplier)
+        this.x += this.dx * this.speedMultiplier;
+        this.y += this.dy * this.speedMultiplier;
     }
 
     launch() {

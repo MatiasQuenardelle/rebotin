@@ -8,6 +8,13 @@
 </head>
 <body>
     <div class="game-container">
+        <div id="speedControls" class="speed-controls">
+            <label>Speed:</label>
+            <button class="speed-btn" data-speed="0.5">Slow</button>
+            <button class="speed-btn active" data-speed="1">Normal</button>
+            <button class="speed-btn" data-speed="1.5">Fast</button>
+            <button class="speed-btn" data-speed="2">Insane</button>
+        </div>
         <canvas id="gameCanvas" width="800" height="600"></canvas>
     </div>
     <script type="module" src="js/main.js"></script>

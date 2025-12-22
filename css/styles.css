@@ -39,7 +39,7 @@ body {
 .game-container::before {
     content: '';
     position: absolute;
-    top: 20px;
+    top: 60px;
     left: 20px;
     right: 20px;
     bottom: 20px;
@@ -53,4 +53,48 @@ body {
         transparent 2px
     );
     z-index: 10;
+}
+
+/* Speed controls */
+.speed-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 0;
+    margin-bottom: 5px;
+}
+
+.speed-controls.hidden {
+    display: none;
+}
+
+.speed-controls label {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 14px;
+    margin-right: 4px;
+}
+
+.speed-btn {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(0, 212, 255, 0.3);
+    color: rgba(255, 255, 255, 0.7);
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12px;
+    font-family: inherit;
+    transition: all 0.2s ease;
+}
+
+.speed-btn:hover {
+    background: rgba(0, 212, 255, 0.2);
+    border-color: rgba(0, 212, 255, 0.5);
+    color: #fff;
+}
+
+.speed-btn.active {
+    background: rgba(0, 212, 255, 0.3);
+    border-color: #00d4ff;
+    color: #00d4ff;
+    box-shadow: 0 0 10px rgba(0, 212, 255, 0.3);
 }
