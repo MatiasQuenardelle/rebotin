@@ -28,18 +28,36 @@ if (nephewMode) {
 }
 
 // Show gyro button if device supports it (mobile devices)
-if (input.isGyroAvailable() && 'ontouchstart' in window) {
+const isMobile = 'ontouchstart' in window;
+if (input.isGyroAvailable() && isMobile) {
     gyroBtn.classList.remove('hidden');
+
+    // Auto-enable tilt on mobile by default
+    (async () => {
+        const enabled = await input.requestGyroPermission();
+        if (enabled) {
+            gyroBtn.classList.add('active');
+            gyroBtn.textContent = 'Tilt: ON';
+        }
+    })();
 }
 
-// Gyro button click handler
+// Gyro button click handler - works as a toggle
 gyroBtn.addEventListener('click', async () => {
-    const enabled = await input.requestGyroPermission();
-    if (enabled) {
-        gyroBtn.classList.add('active');
-        gyroBtn.textContent = 'Tilt: ON';
+    if (input.isGyroEnabled()) {
+        // Turn off
+        input.disableGyro();
+        gyroBtn.classList.remove('active');
+        gyroBtn.textContent = 'Tilt: OFF';
     } else {
-        alert('Could not enable tilt controls. Please allow motion sensor access.');
+        // Turn on (may need permission if first time)
+        const enabled = await input.requestGyroPermission();
+        if (enabled) {
+            gyroBtn.classList.add('active');
+            gyroBtn.textContent = 'Tilt: ON';
+        } else {
+            alert('Could not enable tilt controls. Please allow motion sensor access.');
+        }
     }
 });
 
@@ -107,6 +125,57 @@ fullscreenBtn.addEventListener('click', toggleFullscreen);
 document.addEventListener('fullscreenchange', updateFullscreenState);
 document.addEventListener('webkitfullscreenchange', updateFullscreenState);
 document.addEventListener('msfullscreenchange', updateFullscreenState);
+
+// PWA Install prompt handling
+let deferredPrompt = null;
+const installPrompt = document.getElementById('installPrompt');
+const installBtn = document.getElementById('installBtn');
+const installDismiss = document.getElementById('installDismiss');
+
+// Check if we're already in standalone mode
+const isStandalone = window.matchMedia('(display-mode: standalone)').matches ||
+                     window.matchMedia('(display-mode: fullscreen)').matches ||
+                     window.navigator.standalone === true;
+
+// Listen for the beforeinstallprompt event (Chrome/Edge/Android)
+window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+
+    // Only show prompt on mobile and if not already installed
+    if (isMobile && !isStandalone && !localStorage.getItem('installPromptDismissed')) {
+        installPrompt.classList.remove('hidden');
+    }
+});
+
+// Handle install button click
+installBtn?.addEventListener('click', async () => {
+    if (deferredPrompt) {
+        // Android/Chrome install prompt
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        deferredPrompt = null;
+        installPrompt.classList.add('hidden');
+    } else if (/iPhone|iPad|iPod/.test(navigator.userAgent)) {
+        // iOS - show instructions
+        alert('To install: tap the Share button, then "Add to Home Screen"');
+    }
+});
+
+// Handle dismiss button
+installDismiss?.addEventListener('click', () => {
+    installPrompt.classList.add('hidden');
+    localStorage.setItem('installPromptDismissed', 'true');
+});
+
+// Show iOS install hint on mobile Safari after a delay
+if (isMobile && /iPhone|iPad|iPod/.test(navigator.userAgent) && !isStandalone) {
+    if (!localStorage.getItem('installPromptDismissed')) {
+        setTimeout(() => {
+            installPrompt.classList.remove('hidden');
+        }, 3000);
+    }
+}
 
 // Character selection click handler
 canvas.addEventListener('click', (e) => {

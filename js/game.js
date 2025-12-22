@@ -145,11 +145,16 @@ export class Game {
             this.paddle.update(this.input);
 
             if (this.nephew) {
-                this.nephew.update(this.paddle, this.canvas.height);
+                this.nephew.update(this.paddle, this.canvas.height, deltaTime);
 
                 if (this.nephew.state === 'rescued' && !this.nephewRescued) {
                     this.nephewRescued = true;
                     this.score += 200;
+                    // Don't transition immediately - wait for celebration animation
+                }
+
+                // Only transition to level complete after celebration animation finishes
+                if (this.nephewRescued && this.nephew.celebrationComplete) {
                     this.state = this.states.LEVEL_COMPLETE;
                 }
 

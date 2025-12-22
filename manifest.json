@@ -1,0 +1,18 @@
+{
+  "name": "Rebotin - Breakout Game",
+  "short_name": "Rebotin",
+  "description": "A fun breakout game with space theme",
+  "start_url": "/",
+  "display": "fullscreen",
+  "orientation": "any",
+  "background_color": "#0a0a1a",
+  "theme_color": "#0a0a1a",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

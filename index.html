@@ -2,8 +2,14 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Breakout Game</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <!-- PWA / Fullscreen meta tags -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#0a0a1a">
+    <link rel="manifest" href="manifest.json">
+    <title>Rebotin</title>
     <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
@@ -19,6 +25,17 @@
         </div>
         <canvas id="gameCanvas" width="800" height="600"></canvas>
     </div>
+
+    <!-- Install prompt for PWA -->
+    <div id="installPrompt" class="install-prompt hidden">
+        <div class="install-prompt-text">
+            <strong>Play fullscreen!</strong><br>
+            Add to home screen for the best experience
+        </div>
+        <button id="installBtn" class="install-btn">Install</button>
+        <button id="installDismiss" class="install-dismiss">&times;</button>
+    </div>
+
     <script type="module" src="js/main.js"></script>
 </body>
 </html>

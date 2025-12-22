@@ -17,7 +17,8 @@ export class Input {
             gamma: 0,  // left-right tilt in portrait
             beta: 0,   // front-back tilt (used in landscape)
             tilt: 0,   // actual tilt value to use for movement
-            sensitivity: 2.5,  // multiplier for tilt sensitivity
+            sensitivity: 2.5,  // multiplier for tilt sensitivity (portrait)
+            landscapeSensitivity: 4.5,  // higher sensitivity for landscape (less phone tilt needed)
             deadzone: 3  // degrees of tilt to ignore (prevents drift)
         };
         this.useMouseControl = true;
@@ -165,7 +166,27 @@ export class Input {
         this.useGyroControl = true;
         this.useMouseControl = false;
 
-        window.addEventListener('deviceorientation', (e) => this.handleDeviceOrientation(e));
+        // Only add the listener once
+        if (!this.gyroListenerAdded) {
+            window.addEventListener('deviceorientation', (e) => this.handleDeviceOrientation(e));
+            this.gyroListenerAdded = true;
+        }
+    }
+
+    disableGyro() {
+        this.gyro.enabled = false;
+        this.useGyroControl = false;
+        this.useMouseControl = true;
+    }
+
+    toggleGyro() {
+        if (this.gyro.enabled) {
+            this.disableGyro();
+            return false;
+        } else {
+            this.enableGyro();
+            return true;
+        }
     }
 
     handleDeviceOrientation(e) {
@@ -218,10 +239,15 @@ export class Input {
 
     getMovement() {
         if (this.useGyroControl && this.gyro.enabled) {
+            // Use higher sensitivity in landscape mode
+            const isLandscape = this.screenOrientation === 90 ||
+                               this.screenOrientation === -90 ||
+                               this.screenOrientation === 270;
+            const sensitivity = isLandscape ? this.gyro.landscapeSensitivity : this.gyro.sensitivity;
             return {
                 type: 'gyro',
                 tilt: this.gyro.tilt,  // Use calculated tilt (works in both portrait and landscape)
-                sensitivity: this.gyro.sensitivity
+                sensitivity: sensitivity
             };
         }
         if (this.useMouseControl) {
