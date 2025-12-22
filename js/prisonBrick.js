@@ -1,7 +1,7 @@
 import { Nephew } from './nephew.js';
 
 export class PrisonBrick {
-    constructor(x, y, width, height) {
+    constructor(x, y, width, height, characterName = 'Felipe') {
         this.x = x;
         this.y = y;
         this.width = width;
@@ -9,11 +9,13 @@ export class PrisonBrick {
         this.points = 100; // Special brick worth more points!
         this.alive = true;
         this.cornerRadius = 4;
+        this.characterName = characterName;
 
-        // Create nephew centered in brick
+        // Create character centered in brick
         this.nephew = new Nephew(
             x + (width - 16) / 2,
-            y + (height - 20) / 2 + 2
+            y + (height - 20) / 2 + 2,
+            characterName
         );
 
         // Animation

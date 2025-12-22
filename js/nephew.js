@@ -1,9 +1,11 @@
 export class Nephew {
-    constructor(x, y) {
+    constructor(x, y, characterName = 'Felipe') {
         this.x = x;
         this.y = y;
         this.width = 16;
         this.height = 20;
+        this.characterName = characterName;
+        this.isJulieta = characterName === 'Julieta';
 
         // States: trapped, falling, rescued, lost
         this.state = 'trapped';
@@ -190,74 +192,149 @@ export class Nephew {
         const isWaving = this.state === 'trapped' || this.state === 'rescued';
         const waveUp = Math.sin(this.waveTimer) > 0;
 
-        // Pixel art nephew (16x20 pixels scaled)
+        // Pixel art character (16x20 pixels scaled)
         const scale = 1;
 
-        // Hair (brown)
-        ctx.fillStyle = '#8b4513';
-        this.drawPixel(ctx, x + 4, y, 8, 4, scale); // Top hair
-        this.drawPixel(ctx, x + 2, y + 2, 2, 4, scale); // Left side hair
-        this.drawPixel(ctx, x + 12, y + 2, 2, 4, scale); // Right side hair
+        if (this.isJulieta) {
+            // Julieta - girl with longer hair and pink dress
 
-        // Face (skin tone)
-        ctx.fillStyle = '#ffcc99';
-        this.drawPixel(ctx, x + 4, y + 4, 8, 8, scale); // Face
+            // Hair (dark brown, longer)
+            ctx.fillStyle = '#5c3317';
+            this.drawPixel(ctx, x + 4, y, 8, 4, scale); // Top hair
+            this.drawPixel(ctx, x + 2, y + 2, 2, 8, scale); // Left side long hair
+            this.drawPixel(ctx, x + 12, y + 2, 2, 8, scale); // Right side long hair
+            this.drawPixel(ctx, x + 1, y + 6, 2, 6, scale); // Extra left hair
+            this.drawPixel(ctx, x + 13, y + 6, 2, 6, scale); // Extra right hair
 
-        // Eyes
-        ctx.fillStyle = '#000000';
-        this.drawPixel(ctx, x + 5, y + 6, 2, 2, scale); // Left eye
-        this.drawPixel(ctx, x + 9, y + 6, 2, 2, scale); // Right eye
+            // Hair bow (pink)
+            ctx.fillStyle = '#ff6b9d';
+            this.drawPixel(ctx, x + 10, y + 1, 3, 2, scale);
+            this.drawPixel(ctx, x + 11, y, 1, 1, scale);
+            this.drawPixel(ctx, x + 11, y + 3, 1, 1, scale);
 
-        // Eye shine
-        ctx.fillStyle = '#ffffff';
-        this.drawPixel(ctx, x + 5, y + 6, 1, 1, scale);
-        this.drawPixel(ctx, x + 9, y + 6, 1, 1, scale);
+            // Face (skin tone)
+            ctx.fillStyle = '#ffcc99';
+            this.drawPixel(ctx, x + 4, y + 4, 8, 8, scale);
 
-        // Cheeks (blush)
-        ctx.fillStyle = '#ffaaaa';
-        this.drawPixel(ctx, x + 3, y + 8, 2, 2, scale);
-        this.drawPixel(ctx, x + 11, y + 8, 2, 2, scale);
+            // Eyes (slightly bigger/cuter)
+            ctx.fillStyle = '#000000';
+            this.drawPixel(ctx, x + 5, y + 6, 2, 2, scale);
+            this.drawPixel(ctx, x + 9, y + 6, 2, 2, scale);
 
-        // Smile
-        ctx.fillStyle = '#ff6666';
-        if (this.state === 'rescued') {
-            // Big happy smile
-            this.drawPixel(ctx, x + 6, y + 10, 4, 1, scale);
-            this.drawPixel(ctx, x + 5, y + 9, 1, 1, scale);
-            this.drawPixel(ctx, x + 10, y + 9, 1, 1, scale);
-        } else if (this.state === 'trapped') {
-            // Worried mouth
-            ctx.fillStyle = '#cc6666';
-            this.drawPixel(ctx, x + 6, y + 10, 4, 1, scale);
+            // Eye shine
+            ctx.fillStyle = '#ffffff';
+            this.drawPixel(ctx, x + 5, y + 6, 1, 1, scale);
+            this.drawPixel(ctx, x + 9, y + 6, 1, 1, scale);
+
+            // Eyelashes
+            ctx.fillStyle = '#000000';
+            this.drawPixel(ctx, x + 4, y + 5, 1, 1, scale);
+            this.drawPixel(ctx, x + 11, y + 5, 1, 1, scale);
+
+            // Cheeks (blush)
+            ctx.fillStyle = '#ffaaaa';
+            this.drawPixel(ctx, x + 3, y + 8, 2, 2, scale);
+            this.drawPixel(ctx, x + 11, y + 8, 2, 2, scale);
+
+            // Smile
+            ctx.fillStyle = '#ff6666';
+            if (this.state === 'rescued') {
+                this.drawPixel(ctx, x + 6, y + 10, 4, 1, scale);
+                this.drawPixel(ctx, x + 5, y + 9, 1, 1, scale);
+                this.drawPixel(ctx, x + 10, y + 9, 1, 1, scale);
+            } else if (this.state === 'trapped') {
+                ctx.fillStyle = '#cc6666';
+                this.drawPixel(ctx, x + 6, y + 10, 4, 1, scale);
+            } else {
+                this.drawPixel(ctx, x + 6, y + 10, 4, 1, scale);
+            }
+
+            // Body (pink dress)
+            ctx.fillStyle = '#ff6b9d';
+            this.drawPixel(ctx, x + 4, y + 12, 8, 6, scale);
+
+            // Dress detail (lighter pink)
+            ctx.fillStyle = '#ff99b8';
+            this.drawPixel(ctx, x + 6, y + 13, 4, 1, scale);
+
+            // Arms
+            ctx.fillStyle = '#ffcc99';
+            if (isWaving && waveUp) {
+                this.drawPixel(ctx, x + 1, y + 10, 3, 2, scale);
+                this.drawPixel(ctx, x + 12, y + 13, 3, 2, scale);
+            } else {
+                this.drawPixel(ctx, x + 1, y + 13, 3, 2, scale);
+                this.drawPixel(ctx, x + 12, y + 13, 3, 2, scale);
+            }
+
+            // Legs (dress bottom / darker pink)
+            ctx.fillStyle = '#d94f7a';
+            this.drawPixel(ctx, x + 4, y + 18, 3, 2, scale);
+            this.drawPixel(ctx, x + 9, y + 18, 3, 2, scale);
         } else {
-            // Normal smile
-            this.drawPixel(ctx, x + 6, y + 10, 4, 1, scale);
+            // Felipe - boy with short hair and blue shirt
+
+            // Hair (brown)
+            ctx.fillStyle = '#8b4513';
+            this.drawPixel(ctx, x + 4, y, 8, 4, scale); // Top hair
+            this.drawPixel(ctx, x + 2, y + 2, 2, 4, scale); // Left side hair
+            this.drawPixel(ctx, x + 12, y + 2, 2, 4, scale); // Right side hair
+
+            // Face (skin tone)
+            ctx.fillStyle = '#ffcc99';
+            this.drawPixel(ctx, x + 4, y + 4, 8, 8, scale);
+
+            // Eyes
+            ctx.fillStyle = '#000000';
+            this.drawPixel(ctx, x + 5, y + 6, 2, 2, scale);
+            this.drawPixel(ctx, x + 9, y + 6, 2, 2, scale);
+
+            // Eye shine
+            ctx.fillStyle = '#ffffff';
+            this.drawPixel(ctx, x + 5, y + 6, 1, 1, scale);
+            this.drawPixel(ctx, x + 9, y + 6, 1, 1, scale);
+
+            // Cheeks (blush)
+            ctx.fillStyle = '#ffaaaa';
+            this.drawPixel(ctx, x + 3, y + 8, 2, 2, scale);
+            this.drawPixel(ctx, x + 11, y + 8, 2, 2, scale);
+
+            // Smile
+            ctx.fillStyle = '#ff6666';
+            if (this.state === 'rescued') {
+                this.drawPixel(ctx, x + 6, y + 10, 4, 1, scale);
+                this.drawPixel(ctx, x + 5, y + 9, 1, 1, scale);
+                this.drawPixel(ctx, x + 10, y + 9, 1, 1, scale);
+            } else if (this.state === 'trapped') {
+                ctx.fillStyle = '#cc6666';
+                this.drawPixel(ctx, x + 6, y + 10, 4, 1, scale);
+            } else {
+                this.drawPixel(ctx, x + 6, y + 10, 4, 1, scale);
+            }
+
+            // Body (blue shirt)
+            ctx.fillStyle = '#4a90d9';
+            this.drawPixel(ctx, x + 4, y + 12, 8, 6, scale);
+
+            // Shirt detail
+            ctx.fillStyle = '#3a7bc8';
+            this.drawPixel(ctx, x + 7, y + 13, 2, 4, scale);
+
+            // Arms
+            ctx.fillStyle = '#ffcc99';
+            if (isWaving && waveUp) {
+                this.drawPixel(ctx, x + 1, y + 10, 3, 2, scale);
+                this.drawPixel(ctx, x + 12, y + 13, 3, 2, scale);
+            } else {
+                this.drawPixel(ctx, x + 1, y + 13, 3, 2, scale);
+                this.drawPixel(ctx, x + 12, y + 13, 3, 2, scale);
+            }
+
+            // Legs (darker blue pants)
+            ctx.fillStyle = '#2c5aa0';
+            this.drawPixel(ctx, x + 4, y + 18, 3, 2, scale);
+            this.drawPixel(ctx, x + 9, y + 18, 3, 2, scale);
         }
-
-        // Body (blue shirt)
-        ctx.fillStyle = '#4a90d9';
-        this.drawPixel(ctx, x + 4, y + 12, 8, 6, scale);
-
-        // Shirt detail
-        ctx.fillStyle = '#3a7bc8';
-        this.drawPixel(ctx, x + 7, y + 13, 2, 4, scale);
-
-        // Arms
-        ctx.fillStyle = '#ffcc99';
-        if (isWaving && waveUp) {
-            // Waving arm up
-            this.drawPixel(ctx, x + 1, y + 10, 3, 2, scale); // Left arm up
-            this.drawPixel(ctx, x + 12, y + 13, 3, 2, scale); // Right arm normal
-        } else {
-            // Arms down/normal
-            this.drawPixel(ctx, x + 1, y + 13, 3, 2, scale);
-            this.drawPixel(ctx, x + 12, y + 13, 3, 2, scale);
-        }
-
-        // Legs (darker blue pants)
-        ctx.fillStyle = '#2c5aa0';
-        this.drawPixel(ctx, x + 4, y + 18, 3, 2, scale);
-        this.drawPixel(ctx, x + 9, y + 18, 3, 2, scale);
     }
 
     drawPixel(ctx, x, y, w, h, scale) {

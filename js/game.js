@@ -15,16 +15,18 @@ export class Game {
 
         this.states = {
             MENU: 'menu',
+            CHARACTER_SELECT: 'characterSelect',
             PLAYING: 'playing',
-            RESCUE_PHASE: 'rescuePhase',  // Ball gone, focus on catching nephew
+            RESCUE_PHASE: 'rescuePhase',  // Ball gone, focus on catching character
             PAUSED: 'paused',
             LEVEL_COMPLETE: 'levelComplete',
             GAME_OVER: 'gameOver',
             WIN: 'win',
-            NEPHEW_LOST: 'nephewLost'
+            CHARACTER_LOST: 'characterLost'
         };
 
         this.state = this.states.MENU;
+        this.characterName = 'Felipe';  // Default, can be 'Felipe' or 'Julieta'
         this.score = 0;
         this.level = 1;
         this.lives = 3;
@@ -44,9 +46,9 @@ export class Game {
         this.lasers = [];
         this.laserActive = false;
         this.laserTimer = 0;
-        this.laserDuration = 8000; // 8 seconds of laser power
+        this.laserDuration = 10000; // 10 seconds of laser power
         this.laserCooldown = 0;
-        this.laserFireRate = 200; // ms between shots
+        this.laserFireRate = 400; // ms between shots (slower)
 
         this.init();
     }
@@ -65,7 +67,7 @@ export class Game {
     }
 
     loadLevel(levelNum) {
-        const levelData = createLevel(levelNum, this.canvas.width);
+        const levelData = createLevel(levelNum, this.canvas.width, this.characterName);
         this.bricks = levelData.bricks;
         this.prisonBrick = levelData.prisonBrick;
         this.nephew = this.prisonBrick ? this.prisonBrick.getNephew() : null;
@@ -98,14 +100,31 @@ export class Game {
         this.state = this.states.PLAYING;
     }
 
+    selectCharacter(name) {
+        this.characterName = name;
+        this.reset();
+    }
+
     update(deltaTime = 16) {
-        // Handle state transitions
-        if (this.state === this.states.MENU ||
-            this.state === this.states.GAME_OVER ||
-            this.state === this.states.WIN ||
-            this.state === this.states.NEPHEW_LOST) {
+        // Handle menu -> character select
+        if (this.state === this.states.MENU) {
             if (this.input.isLaunchPressed()) {
-                this.reset();
+                this.state = this.states.CHARACTER_SELECT;
+            }
+            return;
+        }
+
+        // Handle character selection (handled by click events in main.js)
+        if (this.state === this.states.CHARACTER_SELECT) {
+            return;
+        }
+
+        // Handle state transitions
+        if (this.state === this.states.GAME_OVER ||
+            this.state === this.states.WIN ||
+            this.state === this.states.CHARACTER_LOST) {
+            if (this.input.isLaunchPressed()) {
+                this.state = this.states.CHARACTER_SELECT;
             }
             return;
         }
@@ -135,7 +154,7 @@ export class Game {
                 }
 
                 if (this.nephew.state === 'lost') {
-                    this.state = this.states.NEPHEW_LOST;
+                    this.state = this.states.CHARACTER_LOST;
                 }
             }
             return;
@@ -151,8 +170,8 @@ export class Game {
             this.laserTimer -= deltaTime;
             this.laserCooldown -= deltaTime;
 
-            // Auto-fire lasers
-            if (this.laserCooldown <= 0) {
+            // Manual fire lasers with space/click (only when ball is already launched)
+            if (this.ball.launched && this.laserCooldown <= 0 && this.input.isLaunchPressed()) {
                 this.fireLasers();
                 this.laserCooldown = this.laserFireRate;
             }
@@ -175,6 +194,14 @@ export class Game {
             if (hitBrick && hitBrick.alive && !hitBrick.indestructible) {
                 this.score += hitBrick.hit();
                 laser.alive = false;
+
+                // Check if we freed the character with laser
+                if (hitBrick === this.prisonBrick && !this.nephewFreed) {
+                    this.nephewFreed = true;
+                    this.score += 50;
+                    this.state = this.states.RESCUE_PHASE;
+                    return;
+                }
 
                 // Chance to spawn power-up
                 this.trySpawnPowerUp(hitBrick);
@@ -341,7 +368,7 @@ export class Game {
 
         // Draw rescue status indicator
         if (this.nephew && (this.state === this.states.PLAYING || this.state === this.states.RESCUE_PHASE)) {
-            this.renderer.drawRescueStatus(this.nephewFreed, this.nephewRescued);
+            this.renderer.drawRescueStatus(this.nephewFreed, this.nephewRescued, this.characterName);
         }
 
         // Draw laser timer
@@ -351,20 +378,40 @@ export class Game {
 
         // Draw rescue phase message
         if (this.state === this.states.RESCUE_PHASE) {
-            this.renderer.drawRescueMessage();
+            this.renderer.drawRescueMessage(this.characterName);
         }
 
         // Draw overlay screens
         if (this.state === this.states.MENU) {
             this.renderer.drawStartScreen();
+        } else if (this.state === this.states.CHARACTER_SELECT) {
+            this.renderer.drawCharacterSelect();
         } else if (this.state === this.states.GAME_OVER) {
             this.renderer.drawGameOver(this.score);
         } else if (this.state === this.states.LEVEL_COMPLETE) {
-            this.renderer.drawLevelComplete(this.level, this.nephewRescued);
+            this.renderer.drawLevelComplete(this.level, this.nephewRescued, this.characterName);
         } else if (this.state === this.states.WIN) {
-            this.renderer.drawWinScreen(this.score);
-        } else if (this.state === this.states.NEPHEW_LOST) {
-            this.renderer.drawNephewLost(this.score);
+            this.renderer.drawWinScreen(this.score, this.characterName);
+        } else if (this.state === this.states.CHARACTER_LOST) {
+            this.renderer.drawCharacterLost(this.score, this.characterName);
         }
+    }
+
+    // Check if click is on Felipe button
+    isClickOnFelipe(x, y) {
+        const btnWidth = 150;
+        const btnHeight = 50;
+        const felipeX = this.canvas.width / 2 - btnWidth - 20;
+        const felipeY = this.canvas.height / 2 + 20;
+        return x >= felipeX && x <= felipeX + btnWidth && y >= felipeY && y <= felipeY + btnHeight;
+    }
+
+    // Check if click is on Julieta button
+    isClickOnJulieta(x, y) {
+        const btnWidth = 150;
+        const btnHeight = 50;
+        const julietaX = this.canvas.width / 2 + 20;
+        const julietaY = this.canvas.height / 2 + 20;
+        return x >= julietaX && x <= julietaX + btnWidth && y >= julietaY && y <= julietaY + btnHeight;
     }
 }

@@ -108,6 +108,41 @@ document.addEventListener('fullscreenchange', updateFullscreenState);
 document.addEventListener('webkitfullscreenchange', updateFullscreenState);
 document.addEventListener('msfullscreenchange', updateFullscreenState);
 
+// Character selection click handler
+canvas.addEventListener('click', (e) => {
+    if (game.state === game.states.CHARACTER_SELECT) {
+        const rect = canvas.getBoundingClientRect();
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
+        const x = (e.clientX - rect.left) * scaleX;
+        const y = (e.clientY - rect.top) * scaleY;
+
+        if (game.isClickOnFelipe(x, y)) {
+            game.selectCharacter('Felipe');
+        } else if (game.isClickOnJulieta(x, y)) {
+            game.selectCharacter('Julieta');
+        }
+    }
+});
+
+// Touch support for character selection
+canvas.addEventListener('touchend', (e) => {
+    if (game.state === game.states.CHARACTER_SELECT && e.changedTouches.length > 0) {
+        const rect = canvas.getBoundingClientRect();
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
+        const touch = e.changedTouches[0];
+        const x = (touch.clientX - rect.left) * scaleX;
+        const y = (touch.clientY - rect.top) * scaleY;
+
+        if (game.isClickOnFelipe(x, y)) {
+            game.selectCharacter('Felipe');
+        } else if (game.isClickOnJulieta(x, y)) {
+            game.selectCharacter('Julieta');
+        }
+    }
+});
+
 // Game loop
 let lastTime = 0;
 

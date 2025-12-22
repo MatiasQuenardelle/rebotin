@@ -94,7 +94,7 @@ const COLOR_MAP = {
     'C': BRICK_COLORS.cyan
 };
 
-export function createLevel(levelNumber, canvasWidth) {
+export function createLevel(levelNumber, canvasWidth, characterName = 'Felipe') {
     const pattern = LEVEL_PATTERNS[(levelNumber - 1) % LEVEL_PATTERNS.length];
     const bricks = [];
     let prisonBrick = null;
@@ -116,9 +116,9 @@ export function createLevel(levelNumber, canvasWidth) {
             const y = startY + row * (brickHeight + brickGap);
 
             if (char === 'P') {
-                // Create prison brick with nephew (only one per level)
+                // Create prison brick with character (only one per level)
                 if (!prisonBrick) {
-                    prisonBrick = new PrisonBrick(x, y, brickWidth, brickHeight);
+                    prisonBrick = new PrisonBrick(x, y, brickWidth, brickHeight, characterName);
                     bricks.push(prisonBrick);
                 }
             } else if (char === 'X') {
