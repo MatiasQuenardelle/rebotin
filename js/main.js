@@ -19,6 +19,8 @@ const game = new Game(canvas, input);
 const speedControls = document.getElementById('speedControls');
 const speedButtons = document.querySelectorAll('.speed-btn');
 const gyroBtn = document.getElementById('gyroBtn');
+const fullscreenBtn = document.getElementById('fullscreenBtn');
+const gameContainer = document.querySelector('.game-container');
 
 // Hide controls in nephew mode
 if (nephewMode) {
@@ -54,6 +56,57 @@ speedButtons.forEach(btn => {
         game.setSpeedMultiplier(speedMultiplier);
     });
 });
+
+// Fullscreen functionality
+let isFullscreen = false;
+
+function toggleFullscreen() {
+    if (!isFullscreen) {
+        // Enter fullscreen
+        const elem = gameContainer;
+        if (elem.requestFullscreen) {
+            elem.requestFullscreen();
+        } else if (elem.webkitRequestFullscreen) {
+            elem.webkitRequestFullscreen();
+        } else if (elem.msRequestFullscreen) {
+            elem.msRequestFullscreen();
+        }
+    } else {
+        // Exit fullscreen
+        if (document.exitFullscreen) {
+            document.exitFullscreen();
+        } else if (document.webkitExitFullscreen) {
+            document.webkitExitFullscreen();
+        } else if (document.msExitFullscreen) {
+            document.msExitFullscreen();
+        }
+    }
+}
+
+function updateFullscreenState() {
+    const fullscreenElement = document.fullscreenElement ||
+                              document.webkitFullscreenElement ||
+                              document.msFullscreenElement;
+
+    isFullscreen = !!fullscreenElement;
+
+    if (isFullscreen) {
+        gameContainer.classList.add('fullscreen');
+        fullscreenBtn.classList.add('active');
+        fullscreenBtn.textContent = 'Exit';
+    } else {
+        gameContainer.classList.remove('fullscreen');
+        fullscreenBtn.classList.remove('active');
+        fullscreenBtn.textContent = 'Fullscreen';
+    }
+}
+
+fullscreenBtn.addEventListener('click', toggleFullscreen);
+
+// Listen for fullscreen changes
+document.addEventListener('fullscreenchange', updateFullscreenState);
+document.addEventListener('webkitfullscreenchange', updateFullscreenState);
+document.addEventListener('msfullscreenchange', updateFullscreenState);
 
 // Game loop
 let lastTime = 0;
