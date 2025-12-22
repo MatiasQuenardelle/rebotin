@@ -78,13 +78,26 @@ export class Renderer {
         this.ctx.textBaseline = 'middle';
         this.ctx.shadowBlur = 20;
         this.ctx.shadowColor = '#00d4ff';
-        this.ctx.fillText('BREAKOUT', this.width / 2, this.height / 2 - 50);
+        this.ctx.fillText('BREAKOUT', this.width / 2, this.height / 2 - 70);
+
+        // Subtitle - rescue mission
+        this.ctx.shadowBlur = 10;
+        this.ctx.shadowColor = '#ff6b9d';
+        this.ctx.font = 'bold 20px "Segoe UI", sans-serif';
+        this.ctx.fillStyle = '#ff6b9d';
+        this.ctx.fillText('~ Rescue Edition ~', this.width / 2, this.height / 2 - 25);
+
+        // Mission text
+        this.ctx.shadowBlur = 0;
+        this.ctx.font = '16px "Segoe UI", sans-serif';
+        this.ctx.fillStyle = '#ffaa00';
+        this.ctx.fillText('Free your nephew from the prison brick', this.width / 2, this.height / 2 + 15);
+        this.ctx.fillText('and catch him with your paddle!', this.width / 2, this.height / 2 + 35);
 
         // Instructions
-        this.ctx.shadowBlur = 0;
         this.ctx.font = '20px "Segoe UI", sans-serif';
         this.ctx.fillStyle = '#ffffff';
-        this.ctx.fillText('Click or press SPACE to start', this.width / 2, this.height / 2 + 30);
+        this.ctx.fillText('Click or press SPACE to start', this.width / 2, this.height / 2 + 80);
 
         this.ctx.restore();
     }
@@ -119,7 +132,7 @@ export class Renderer {
         this.ctx.restore();
     }
 
-    drawLevelComplete(level) {
+    drawLevelComplete(level, nephewRescued = false) {
         this.ctx.save();
 
         // Darken background
@@ -133,13 +146,83 @@ export class Renderer {
         this.ctx.textBaseline = 'middle';
         this.ctx.shadowBlur = 20;
         this.ctx.shadowColor = '#2ecc71';
-        this.ctx.fillText(`LEVEL ${level} COMPLETE!`, this.width / 2, this.height / 2 - 30);
+        this.ctx.fillText(`LEVEL ${level} COMPLETE!`, this.width / 2, this.height / 2 - 50);
+
+        // Nephew rescued celebration
+        if (nephewRescued) {
+            this.ctx.shadowBlur = 15;
+            this.ctx.shadowColor = '#ff6b9d';
+            this.ctx.font = 'bold 24px "Segoe UI", sans-serif';
+            this.ctx.fillStyle = '#ff6b9d';
+            this.ctx.fillText('NEPHEW RESCUED!', this.width / 2, this.height / 2);
+        }
 
         // Continue instruction
         this.ctx.shadowBlur = 0;
         this.ctx.font = '18px "Segoe UI", sans-serif';
         this.ctx.fillStyle = '#ffffff';
-        this.ctx.fillText('Click or press SPACE to continue', this.width / 2, this.height / 2 + 30);
+        this.ctx.fillText('Click or press SPACE to continue', this.width / 2, this.height / 2 + 50);
+
+        this.ctx.restore();
+    }
+
+    drawRescueStatus(nephewFreed, nephewRescued) {
+        this.ctx.save();
+
+        this.ctx.font = 'bold 14px "Segoe UI", sans-serif';
+        this.ctx.textAlign = 'center';
+        this.ctx.textBaseline = 'top';
+
+        if (!nephewFreed) {
+            // Nephew still trapped
+            this.ctx.fillStyle = '#ffaa00';
+            this.ctx.fillText('Break the prison to free your nephew!', this.width / 2, 38);
+        } else if (!nephewRescued) {
+            // Nephew falling - catch him!
+            this.ctx.fillStyle = '#ff6b9d';
+            this.ctx.shadowBlur = 10;
+            this.ctx.shadowColor = '#ff6b9d';
+            this.ctx.fillText('CATCH YOUR NEPHEW!', this.width / 2, 38);
+        } else {
+            // Nephew safe!
+            this.ctx.fillStyle = '#2ecc71';
+            this.ctx.fillText('Nephew safe! Destroy remaining bricks!', this.width / 2, 38);
+        }
+
+        this.ctx.restore();
+    }
+
+    drawNephewLost(score) {
+        this.ctx.save();
+
+        // Darken background
+        this.ctx.fillStyle = 'rgba(0, 0, 0, 0.85)';
+        this.ctx.fillRect(0, 0, this.width, this.height);
+
+        // Oh no text
+        this.ctx.font = 'bold 48px "Segoe UI", sans-serif';
+        this.ctx.fillStyle = '#ff6b9d';
+        this.ctx.textAlign = 'center';
+        this.ctx.textBaseline = 'middle';
+        this.ctx.shadowBlur = 20;
+        this.ctx.shadowColor = '#ff6b9d';
+        this.ctx.fillText('OH NO!', this.width / 2, this.height / 2 - 60);
+
+        // Explanation
+        this.ctx.shadowBlur = 0;
+        this.ctx.font = '24px "Segoe UI", sans-serif';
+        this.ctx.fillStyle = '#ffffff';
+        this.ctx.fillText('You missed your nephew!', this.width / 2, this.height / 2);
+
+        // Final score
+        this.ctx.font = '20px "Segoe UI", sans-serif';
+        this.ctx.fillStyle = '#aaaaaa';
+        this.ctx.fillText(`Score: ${score}`, this.width / 2, this.height / 2 + 40);
+
+        // Restart instruction
+        this.ctx.font = '18px "Segoe UI", sans-serif';
+        this.ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+        this.ctx.fillText('Click or press SPACE to try again', this.width / 2, this.height / 2 + 90);
 
         this.ctx.restore();
     }
@@ -158,18 +241,25 @@ export class Renderer {
         this.ctx.textBaseline = 'middle';
         this.ctx.shadowBlur = 20;
         this.ctx.shadowColor = '#f1c40f';
-        this.ctx.fillText('YOU WIN!', this.width / 2, this.height / 2 - 50);
+        this.ctx.fillText('YOU WIN!', this.width / 2, this.height / 2 - 70);
+
+        // All nephews saved celebration
+        this.ctx.shadowBlur = 15;
+        this.ctx.shadowColor = '#ff6b9d';
+        this.ctx.font = 'bold 24px "Segoe UI", sans-serif';
+        this.ctx.fillStyle = '#ff6b9d';
+        this.ctx.fillText('All nephews rescued!', this.width / 2, this.height / 2 - 20);
 
         // Final score
         this.ctx.shadowBlur = 0;
         this.ctx.font = '24px "Segoe UI", sans-serif';
         this.ctx.fillStyle = '#ffffff';
-        this.ctx.fillText(`Final Score: ${score}`, this.width / 2, this.height / 2 + 20);
+        this.ctx.fillText(`Final Score: ${score}`, this.width / 2, this.height / 2 + 25);
 
         // Restart instruction
         this.ctx.font = '18px "Segoe UI", sans-serif';
         this.ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
-        this.ctx.fillText('Click or press SPACE to play again', this.width / 2, this.height / 2 + 70);
+        this.ctx.fillText('Click or press SPACE to play again', this.width / 2, this.height / 2 + 75);
 
         this.ctx.restore();
     }

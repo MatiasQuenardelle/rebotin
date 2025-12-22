@@ -18,11 +18,28 @@ const game = new Game(canvas, input);
 // Speed controls setup
 const speedControls = document.getElementById('speedControls');
 const speedButtons = document.querySelectorAll('.speed-btn');
+const gyroBtn = document.getElementById('gyroBtn');
 
 // Hide controls in nephew mode
 if (nephewMode) {
     speedControls.classList.add('hidden');
 }
+
+// Show gyro button if device supports it (mobile devices)
+if (input.isGyroAvailable() && 'ontouchstart' in window) {
+    gyroBtn.classList.remove('hidden');
+}
+
+// Gyro button click handler
+gyroBtn.addEventListener('click', async () => {
+    const enabled = await input.requestGyroPermission();
+    if (enabled) {
+        gyroBtn.classList.add('active');
+        gyroBtn.textContent = 'Tilt: ON';
+    } else {
+        alert('Could not enable tilt controls. Please allow motion sensor access.');
+    }
+});
 
 // Speed button click handlers
 speedButtons.forEach(btn => {

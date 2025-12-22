@@ -17,7 +17,8 @@ export class Game {
             PAUSED: 'paused',
             LEVEL_COMPLETE: 'levelComplete',
             GAME_OVER: 'gameOver',
-            WIN: 'win'
+            WIN: 'win',
+            NEPHEW_LOST: 'nephewLost'
         };
 
         this.state = this.states.MENU;
@@ -29,6 +30,10 @@ export class Game {
         this.paddle = null;
         this.ball = null;
         this.bricks = [];
+        this.prisonBrick = null;
+        this.nephew = null;
+        this.nephewFreed = false;
+        this.nephewRescued = false;
         this.speedMultiplier = 1;
 
         this.init();
@@ -44,7 +49,16 @@ export class Game {
     init() {
         this.paddle = new Paddle(this.canvas.width, this.canvas.height);
         this.ball = new Ball(this.canvas.width, this.canvas.height);
-        this.bricks = createLevel(this.level, this.canvas.width);
+        this.loadLevel(this.level);
+    }
+
+    loadLevel(levelNum) {
+        const levelData = createLevel(levelNum, this.canvas.width);
+        this.bricks = levelData.bricks;
+        this.prisonBrick = levelData.prisonBrick;
+        this.nephew = this.prisonBrick ? this.prisonBrick.getNephew() : null;
+        this.nephewFreed = false;
+        this.nephewRescued = false;
     }
 
     reset() {
@@ -55,12 +69,12 @@ export class Game {
         this.paddle.reset(this.canvas.width);
         this.ball.reset(this.paddle);
         this.ball.speed = this.ball.baseSpeed;
-        this.bricks = createLevel(this.level, this.canvas.width);
+        this.loadLevel(this.level);
     }
 
     startLevel(levelNum) {
         this.level = levelNum;
-        this.bricks = createLevel(this.level, this.canvas.width);
+        this.loadLevel(levelNum);
         this.paddle.reset(this.canvas.width);
         this.ball.reset(this.paddle);
         this.ball.increaseSpeed((levelNum - 1) * 0.3);
@@ -71,7 +85,8 @@ export class Game {
         // Handle state transitions
         if (this.state === this.states.MENU ||
             this.state === this.states.GAME_OVER ||
-            this.state === this.states.WIN) {
+            this.state === this.states.WIN ||
+            this.state === this.states.NEPHEW_LOST) {
             if (this.input.isLaunchPressed()) {
                 this.reset();
             }
@@ -112,6 +127,33 @@ export class Game {
         const hitBrick = ballBrickCollision(this.ball, this.bricks);
         if (hitBrick) {
             this.score += hitBrick.hit();
+
+            // Check if we freed the nephew
+            if (hitBrick === this.prisonBrick && !this.nephewFreed) {
+                this.nephewFreed = true;
+                this.score += 50; // Bonus for freeing nephew!
+            }
+        }
+
+        // Update prison brick animation
+        if (this.prisonBrick && this.prisonBrick.alive) {
+            this.prisonBrick.update();
+        }
+
+        // Update nephew if freed
+        if (this.nephew && this.nephewFreed) {
+            this.nephew.update(this.paddle, this.canvas.height);
+
+            // Check if nephew was rescued
+            if (this.nephew.state === 'rescued' && !this.nephewRescued) {
+                this.nephewRescued = true;
+                this.score += 200; // Big bonus for rescue!
+            }
+
+            // Check if nephew fell off screen
+            if (this.nephew.state === 'lost') {
+                this.state = this.states.NEPHEW_LOST;
+            }
         }
 
         // Check for ball out of bounds
@@ -119,7 +161,7 @@ export class Game {
             this.loseLife();
         }
 
-        // Check for level complete
+        // Check for level complete (all bricks destroyed AND nephew rescued)
         if (this.checkWin()) {
             this.state = this.states.LEVEL_COMPLETE;
         }
@@ -135,7 +177,12 @@ export class Game {
     }
 
     checkWin() {
-        return this.bricks.every(brick => !brick.alive);
+        const allBricksDestroyed = this.bricks.every(brick => !brick.alive);
+        // Must rescue nephew AND destroy all bricks to complete level
+        if (this.nephew) {
+            return allBricksDestroyed && this.nephewRescued;
+        }
+        return allBricksDestroyed;
     }
 
     render() {
@@ -148,13 +195,28 @@ export class Game {
             brick.render(this.ctx);
         }
 
+        // Draw falling nephew (after bricks, before paddle)
+        if (this.nephew && this.nephewFreed && this.nephew.state !== 'trapped') {
+            this.nephew.render(this.ctx);
+        }
+
         // Draw paddle and ball
         this.paddle.render(this.ctx);
         this.ball.render(this.ctx);
 
+        // Draw rescued nephew on paddle
+        if (this.nephew && this.nephewRescued) {
+            this.nephew.render(this.ctx);
+        }
+
         // Draw HUD
         this.renderer.drawHUD(this.score, this.level, this.lives);
         this.renderer.drawControls();
+
+        // Draw rescue status indicator
+        if (this.nephew && this.state === this.states.PLAYING) {
+            this.renderer.drawRescueStatus(this.nephewFreed, this.nephewRescued);
+        }
 
         // Draw overlay screens
         if (this.state === this.states.MENU) {
@@ -162,9 +224,11 @@ export class Game {
         } else if (this.state === this.states.GAME_OVER) {
             this.renderer.drawGameOver(this.score);
         } else if (this.state === this.states.LEVEL_COMPLETE) {
-            this.renderer.drawLevelComplete(this.level);
+            this.renderer.drawLevelComplete(this.level, this.nephewRescued);
         } else if (this.state === this.states.WIN) {
             this.renderer.drawWinScreen(this.score);
+        } else if (this.state === this.states.NEPHEW_LOST) {
+            this.renderer.drawNephewLost(this.score);
         }
     }
 }

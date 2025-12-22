@@ -98,3 +98,68 @@ body {
     color: #00d4ff;
     box-shadow: 0 0 10px rgba(0, 212, 255, 0.3);
 }
+
+/* Gyro button */
+.gyro-btn {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 165, 0, 0.3);
+    color: rgba(255, 255, 255, 0.7);
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12px;
+    font-family: inherit;
+    transition: all 0.2s ease;
+    margin-left: auto;
+}
+
+.gyro-btn:hover {
+    background: rgba(255, 165, 0, 0.2);
+    border-color: rgba(255, 165, 0, 0.5);
+    color: #fff;
+}
+
+.gyro-btn.active {
+    background: rgba(255, 165, 0, 0.3);
+    border-color: orange;
+    color: orange;
+    box-shadow: 0 0 10px rgba(255, 165, 0, 0.3);
+}
+
+.gyro-btn.hidden {
+    display: none;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 850px) {
+    .game-container {
+        padding: 10px;
+        border-radius: 0;
+        width: 100vw;
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+    }
+
+    #gameCanvas {
+        width: 100%;
+        height: auto;
+        max-height: calc(100vh - 60px);
+    }
+
+    .speed-controls {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 6px;
+        padding: 5px 0;
+    }
+
+    .speed-btn, .gyro-btn {
+        padding: 8px 10px;
+        font-size: 11px;
+    }
+
+    .gyro-btn {
+        margin-left: 0;
+    }
+}

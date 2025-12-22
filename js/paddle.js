@@ -13,7 +13,12 @@ export class Paddle {
     update(input) {
         const movement = input.getMovement();
 
-        if (movement.type === 'mouse') {
+        if (movement.type === 'gyro') {
+            // Convert tilt angle to paddle movement
+            // gamma ranges from -90 to 90, multiply by sensitivity
+            const tiltMovement = movement.gamma * movement.sensitivity;
+            this.x += tiltMovement * 0.1;  // Scale down for smooth movement
+        } else if (movement.type === 'mouse') {
             this.x = movement.x - this.width / 2;
         } else {
             if (movement.left) {
