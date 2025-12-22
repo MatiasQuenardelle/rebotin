@@ -185,13 +185,13 @@ export class Input {
 
         if (this.screenOrientation === 90) {
             // Landscape with home button on right
-            tilt = -beta;
+            tilt = beta;
         } else if (this.screenOrientation === -90 || this.screenOrientation === 270) {
             // Landscape with home button on left
-            tilt = beta;
+            tilt = -beta;
         } else {
             // Portrait mode (0 or 180)
-            tilt = gamma;
+            tilt = -gamma;
         }
 
         // Apply deadzone to prevent drift
