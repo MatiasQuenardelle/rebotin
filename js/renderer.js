@@ -263,4 +263,57 @@ export class Renderer {
 
         this.ctx.restore();
     }
+
+    drawLaserTimer(percentage) {
+        this.ctx.save();
+
+        const barWidth = 100;
+        const barHeight = 8;
+        const x = this.width - barWidth - 30;
+        const y = 38;
+
+        // Background
+        this.ctx.fillStyle = 'rgba(50, 50, 50, 0.8)';
+        this.ctx.beginPath();
+        this.ctx.roundRect(x, y, barWidth, barHeight, 4);
+        this.ctx.fill();
+
+        // Filled portion
+        const gradient = this.ctx.createLinearGradient(x, y, x + barWidth, y);
+        gradient.addColorStop(0, '#ff4444');
+        gradient.addColorStop(1, '#ff8888');
+        this.ctx.fillStyle = gradient;
+        this.ctx.shadowBlur = 5;
+        this.ctx.shadowColor = '#ff4444';
+        this.ctx.beginPath();
+        this.ctx.roundRect(x, y, barWidth * percentage, barHeight, 4);
+        this.ctx.fill();
+
+        // Label
+        this.ctx.shadowBlur = 0;
+        this.ctx.font = 'bold 10px "Segoe UI", sans-serif';
+        this.ctx.fillStyle = '#ff4444';
+        this.ctx.textAlign = 'right';
+        this.ctx.textBaseline = 'bottom';
+        this.ctx.fillText('LASER', x - 5, y + barHeight);
+
+        this.ctx.restore();
+    }
+
+    drawRescueMessage() {
+        this.ctx.save();
+
+        // Flashing "CATCH HIM!" message
+        const alpha = 0.5 + Math.sin(Date.now() / 100) * 0.5;
+
+        this.ctx.font = 'bold 28px "Segoe UI", sans-serif';
+        this.ctx.fillStyle = `rgba(255, 107, 157, ${alpha})`;
+        this.ctx.textAlign = 'center';
+        this.ctx.textBaseline = 'middle';
+        this.ctx.shadowBlur = 15;
+        this.ctx.shadowColor = '#ff6b9d';
+        this.ctx.fillText('CATCH YOUR NEPHEW!', this.width / 2, this.height / 2);
+
+        this.ctx.restore();
+    }
 }

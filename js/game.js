@@ -1,8 +1,10 @@
 import { Paddle } from './paddle.js';
 import { Ball } from './ball.js';
 import { createLevel, getTotalLevels } from './levels.js';
-import { ballWallCollision, ballPaddleCollision, ballBrickCollision } from './collision.js';
+import { ballWallCollision, ballPaddleCollision, ballBrickCollision, laserBrickCollision } from './collision.js';
 import { Renderer } from './renderer.js';
+import { PowerUp } from './powerUp.js';
+import { Laser } from './laser.js';
 
 export class Game {
     constructor(canvas, input) {
@@ -14,6 +16,7 @@ export class Game {
         this.states = {
             MENU: 'menu',
             PLAYING: 'playing',
+            RESCUE_PHASE: 'rescuePhase',  // Ball gone, focus on catching nephew
             PAUSED: 'paused',
             LEVEL_COMPLETE: 'levelComplete',
             GAME_OVER: 'gameOver',
@@ -35,6 +38,15 @@ export class Game {
         this.nephewFreed = false;
         this.nephewRescued = false;
         this.speedMultiplier = 1;
+
+        // Power-ups
+        this.powerUps = [];
+        this.lasers = [];
+        this.laserActive = false;
+        this.laserTimer = 0;
+        this.laserDuration = 8000; // 8 seconds of laser power
+        this.laserCooldown = 0;
+        this.laserFireRate = 200; // ms between shots
 
         this.init();
     }
@@ -59,6 +71,11 @@ export class Game {
         this.nephew = this.prisonBrick ? this.prisonBrick.getNephew() : null;
         this.nephewFreed = false;
         this.nephewRescued = false;
+        // Reset power-ups
+        this.powerUps = [];
+        this.lasers = [];
+        this.laserActive = false;
+        this.laserTimer = 0;
     }
 
     reset() {
@@ -81,7 +98,7 @@ export class Game {
         this.state = this.states.PLAYING;
     }
 
-    update() {
+    update(deltaTime = 16) {
         // Handle state transitions
         if (this.state === this.states.MENU ||
             this.state === this.states.GAME_OVER ||
@@ -104,10 +121,65 @@ export class Game {
             return;
         }
 
+        // Handle rescue phase - ball is gone, just catch the nephew
+        if (this.state === this.states.RESCUE_PHASE) {
+            this.paddle.update(this.input);
+
+            if (this.nephew) {
+                this.nephew.update(this.paddle, this.canvas.height);
+
+                if (this.nephew.state === 'rescued' && !this.nephewRescued) {
+                    this.nephewRescued = true;
+                    this.score += 200;
+                    this.state = this.states.LEVEL_COMPLETE;
+                }
+
+                if (this.nephew.state === 'lost') {
+                    this.state = this.states.NEPHEW_LOST;
+                }
+            }
+            return;
+        }
+
         if (this.state !== this.states.PLAYING) return;
 
         // Update paddle
         this.paddle.update(this.input);
+
+        // Update laser timer
+        if (this.laserActive) {
+            this.laserTimer -= deltaTime;
+            this.laserCooldown -= deltaTime;
+
+            // Auto-fire lasers
+            if (this.laserCooldown <= 0) {
+                this.fireLasers();
+                this.laserCooldown = this.laserFireRate;
+            }
+
+            if (this.laserTimer <= 0) {
+                this.laserActive = false;
+                this.paddle.laserMode = false;
+            }
+        }
+
+        // Update lasers
+        this.lasers = this.lasers.filter(laser => {
+            laser.update();
+            return laser.y > 0 && laser.alive;
+        });
+
+        // Check laser-brick collisions
+        for (const laser of this.lasers) {
+            const hitBrick = laserBrickCollision(laser, this.bricks);
+            if (hitBrick && hitBrick.alive && !hitBrick.indestructible) {
+                this.score += hitBrick.hit();
+                laser.alive = false;
+
+                // Chance to spawn power-up
+                this.trySpawnPowerUp(hitBrick);
+            }
+        }
 
         // Launch ball
         if (!this.ball.launched && this.input.isLaunchPressed()) {
@@ -126,34 +198,46 @@ export class Game {
         // Check brick collisions
         const hitBrick = ballBrickCollision(this.ball, this.bricks);
         if (hitBrick) {
-            this.score += hitBrick.hit();
+            // Indestructible bricks don't get destroyed
+            if (!hitBrick.indestructible) {
+                this.score += hitBrick.hit();
 
-            // Check if we freed the nephew
-            if (hitBrick === this.prisonBrick && !this.nephewFreed) {
-                this.nephewFreed = true;
-                this.score += 50; // Bonus for freeing nephew!
+                // Chance to spawn power-up
+                this.trySpawnPowerUp(hitBrick);
+
+                // Check if we freed the nephew
+                if (hitBrick === this.prisonBrick && !this.nephewFreed) {
+                    this.nephewFreed = true;
+                    this.score += 50;
+                    // Enter rescue phase - ball disappears
+                    this.state = this.states.RESCUE_PHASE;
+                    return;
+                }
             }
         }
+
+        // Update power-ups
+        this.powerUps = this.powerUps.filter(powerUp => {
+            powerUp.update();
+
+            // Check if collected by paddle
+            if (powerUp.checkCollision(this.paddle)) {
+                this.activatePowerUp(powerUp);
+                return false;
+            }
+
+            // Remove if off screen
+            return powerUp.y < this.canvas.height + 20;
+        });
 
         // Update prison brick animation
         if (this.prisonBrick && this.prisonBrick.alive) {
             this.prisonBrick.update();
         }
 
-        // Update nephew if freed
+        // Update nephew if freed (shouldn't happen in PLAYING state anymore)
         if (this.nephew && this.nephewFreed) {
             this.nephew.update(this.paddle, this.canvas.height);
-
-            // Check if nephew was rescued
-            if (this.nephew.state === 'rescued' && !this.nephewRescued) {
-                this.nephewRescued = true;
-                this.score += 200; // Big bonus for rescue!
-            }
-
-            // Check if nephew fell off screen
-            if (this.nephew.state === 'lost') {
-                this.state = this.states.NEPHEW_LOST;
-            }
         }
 
         // Check for ball out of bounds
@@ -161,10 +245,37 @@ export class Game {
             this.loseLife();
         }
 
-        // Check for level complete (all bricks destroyed AND nephew rescued)
+        // Check for level complete (all breakable bricks destroyed)
         if (this.checkWin()) {
             this.state = this.states.LEVEL_COMPLETE;
         }
+    }
+
+    trySpawnPowerUp(brick) {
+        // 15% chance to spawn a power-up
+        if (Math.random() < 0.15) {
+            const powerUp = new PowerUp(
+                brick.x + brick.width / 2,
+                brick.y + brick.height / 2
+            );
+            this.powerUps.push(powerUp);
+        }
+    }
+
+    activatePowerUp(powerUp) {
+        if (powerUp.type === 'laser') {
+            this.laserActive = true;
+            this.laserTimer = this.laserDuration;
+            this.paddle.laserMode = true;
+            this.score += 25;
+        }
+    }
+
+    fireLasers() {
+        // Fire from both sides of paddle
+        const leftLaser = new Laser(this.paddle.x + 5, this.paddle.y);
+        const rightLaser = new Laser(this.paddle.x + this.paddle.width - 5, this.paddle.y);
+        this.lasers.push(leftLaser, rightLaser);
     }
 
     loseLife() {
@@ -177,10 +288,11 @@ export class Game {
     }
 
     checkWin() {
-        const allBricksDestroyed = this.bricks.every(brick => !brick.alive);
-        // Must rescue nephew AND destroy all bricks to complete level
-        if (this.nephew) {
-            return allBricksDestroyed && this.nephewRescued;
+        // Only check breakable bricks (not indestructible)
+        const allBricksDestroyed = this.bricks.every(brick => !brick.alive || brick.indestructible);
+        // In rescue phase, just need to catch nephew
+        if (this.state === this.states.RESCUE_PHASE) {
+            return this.nephewRescued;
         }
         return allBricksDestroyed;
     }
@@ -195,14 +307,28 @@ export class Game {
             brick.render(this.ctx);
         }
 
+        // Draw lasers
+        for (const laser of this.lasers) {
+            laser.render(this.ctx);
+        }
+
+        // Draw power-ups
+        for (const powerUp of this.powerUps) {
+            powerUp.render(this.ctx);
+        }
+
         // Draw falling nephew (after bricks, before paddle)
         if (this.nephew && this.nephewFreed && this.nephew.state !== 'trapped') {
             this.nephew.render(this.ctx);
         }
 
-        // Draw paddle and ball
+        // Draw paddle
         this.paddle.render(this.ctx);
-        this.ball.render(this.ctx);
+
+        // Only draw ball if not in rescue phase
+        if (this.state !== this.states.RESCUE_PHASE) {
+            this.ball.render(this.ctx);
+        }
 
         // Draw rescued nephew on paddle
         if (this.nephew && this.nephewRescued) {
@@ -214,8 +340,18 @@ export class Game {
         this.renderer.drawControls();
 
         // Draw rescue status indicator
-        if (this.nephew && this.state === this.states.PLAYING) {
+        if (this.nephew && (this.state === this.states.PLAYING || this.state === this.states.RESCUE_PHASE)) {
             this.renderer.drawRescueStatus(this.nephewFreed, this.nephewRescued);
+        }
+
+        // Draw laser timer
+        if (this.laserActive) {
+            this.renderer.drawLaserTimer(this.laserTimer / this.laserDuration);
+        }
+
+        // Draw rescue phase message
+        if (this.state === this.states.RESCUE_PHASE) {
+            this.renderer.drawRescueMessage();
         }
 
         // Draw overlay screens

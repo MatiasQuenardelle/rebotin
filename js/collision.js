@@ -78,3 +78,21 @@ export function ballBrickCollision(ball, bricks) {
 
     return null;
 }
+
+export function laserBrickCollision(laser, bricks) {
+    const laserBounds = laser.getBounds();
+
+    for (const brick of bricks) {
+        if (!brick.alive) continue;
+
+        // Simple AABB collision
+        if (laserBounds.x < brick.x + brick.width &&
+            laserBounds.x + laserBounds.width > brick.x &&
+            laserBounds.y < brick.y + brick.height &&
+            laserBounds.y + laserBounds.height > brick.y) {
+            return brick;
+        }
+    }
+
+    return null;
+}

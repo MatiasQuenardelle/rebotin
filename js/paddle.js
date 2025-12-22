@@ -8,6 +8,8 @@ export class Paddle {
         this.color = '#00d4ff';
         this.glowColor = 'rgba(0, 212, 255, 0.8)';
         this.canvasWidth = canvasWidth;
+        this.laserMode = false;
+        this.laserPulse = 0;
     }
 
     update(input) {
@@ -15,9 +17,9 @@ export class Paddle {
 
         if (movement.type === 'gyro') {
             // Convert tilt angle to paddle movement
-            // gamma ranges from -90 to 90, multiply by sensitivity
-            const tiltMovement = movement.gamma * movement.sensitivity;
-            this.x += tiltMovement * 0.1;  // Scale down for smooth movement
+            // tilt ranges from -90 to 90, multiply by sensitivity
+            const tiltMovement = movement.tilt * movement.sensitivity;
+            this.x += tiltMovement * 0.15;  // Scale for smooth movement
         } else if (movement.type === 'mouse') {
             this.x = movement.x - this.width / 2;
         } else {
@@ -44,12 +46,16 @@ export class Paddle {
     render(ctx) {
         ctx.save();
 
-        // Glow effect
+        if (this.laserMode) {
+            this.laserPulse += 0.15;
+        }
+
+        // Glow effect - red when in laser mode
         ctx.shadowBlur = 20;
-        ctx.shadowColor = this.glowColor;
+        ctx.shadowColor = this.laserMode ? 'rgba(255, 68, 68, 0.8)' : this.glowColor;
 
         // Draw paddle with rounded corners
-        ctx.fillStyle = this.color;
+        ctx.fillStyle = this.laserMode ? '#ff4444' : this.color;
         ctx.beginPath();
         const radius = this.height / 2;
         ctx.roundRect(this.x, this.y, this.width, this.height, radius);
@@ -65,6 +71,33 @@ export class Paddle {
         ctx.beginPath();
         ctx.roundRect(this.x, this.y, this.width, this.height, radius);
         ctx.fill();
+
+        // Draw laser cannons when in laser mode
+        if (this.laserMode) {
+            const pulse = 1 + Math.sin(this.laserPulse) * 0.2;
+
+            // Left cannon
+            ctx.fillStyle = '#ffaaaa';
+            ctx.beginPath();
+            ctx.arc(this.x + 5, this.y, 4 * pulse, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Right cannon
+            ctx.beginPath();
+            ctx.arc(this.x + this.width - 5, this.y, 4 * pulse, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Cannon glow
+            ctx.shadowBlur = 8;
+            ctx.shadowColor = '#ff4444';
+            ctx.fillStyle = '#ffffff';
+            ctx.beginPath();
+            ctx.arc(this.x + 5, this.y, 2, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(this.x + this.width - 5, this.y, 2, 0, Math.PI * 2);
+            ctx.fill();
+        }
 
         ctx.restore();
     }
