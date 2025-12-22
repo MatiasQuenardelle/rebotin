@@ -19,6 +19,7 @@ export class Game {
             PLAYING: 'playing',
             RESCUE_PHASE: 'rescuePhase',  // Ball gone, focus on catching character
             PAUSED: 'paused',
+            LEVEL_CELEBRATION: 'levelCelebration',  // Show rescue animation before level complete
             LEVEL_COMPLETE: 'levelComplete',
             GAME_OVER: 'gameOver',
             WIN: 'win',
@@ -140,6 +141,20 @@ export class Game {
             return;
         }
 
+        // Handle level celebration - show rescue animation before level complete
+        if (this.state === this.states.LEVEL_CELEBRATION) {
+            // Keep updating the nephew animation
+            if (this.nephew) {
+                this.nephew.update(this.paddle, this.canvas.height, deltaTime);
+
+                // Transition to level complete after celebration finishes
+                if (this.nephew.celebrationComplete) {
+                    this.state = this.states.LEVEL_COMPLETE;
+                }
+            }
+            return;
+        }
+
         // Handle rescue phase - ball is gone, just catch the nephew
         if (this.state === this.states.RESCUE_PHASE) {
             this.paddle.update(this.input);
@@ -153,9 +168,13 @@ export class Game {
                     // Don't transition immediately - wait for celebration animation
                 }
 
-                // Only transition to level complete after celebration animation finishes
+                // Transition to level celebration screen after rescue animation finishes
                 if (this.nephewRescued && this.nephew.celebrationComplete) {
-                    this.state = this.states.LEVEL_COMPLETE;
+                    this.state = this.states.LEVEL_CELEBRATION;
+                    // Keep the celebration going with fresh effects
+                    this.nephew.celebrationComplete = false;
+                    this.nephew.celebrationTimer = 0;
+                    this.nephew.createCelebrationEffects();
                 }
 
                 if (this.nephew.state === 'lost') {
@@ -279,7 +298,20 @@ export class Game {
 
         // Check for level complete (all breakable bricks destroyed)
         if (this.checkWin()) {
-            this.state = this.states.LEVEL_COMPLETE;
+            // Start the level celebration with the character
+            if (this.nephew && this.nephewRescued) {
+                // Position nephew on paddle for celebration
+                this.nephew.x = this.paddle.x + this.paddle.width / 2 - this.nephew.width / 2;
+                this.nephew.y = this.paddle.y - this.nephew.height;
+                // Reset and start celebration
+                this.nephew.celebrationComplete = false;
+                this.nephew.celebrationTimer = 0;
+                this.nephew.createCelebrationEffects();
+                this.state = this.states.LEVEL_CELEBRATION;
+            } else {
+                // No rescued character, go straight to level complete
+                this.state = this.states.LEVEL_COMPLETE;
+            }
         }
     }
 
@@ -362,8 +394,8 @@ export class Game {
             this.ball.render(this.ctx);
         }
 
-        // Draw rescued nephew on paddle
-        if (this.nephew && this.nephewRescued) {
+        // Draw rescued nephew on paddle (during play or celebration)
+        if (this.nephew && (this.nephewRescued || this.state === this.states.LEVEL_CELEBRATION)) {
             this.nephew.render(this.ctx);
         }
 
@@ -393,6 +425,8 @@ export class Game {
             this.renderer.drawCharacterSelect();
         } else if (this.state === this.states.GAME_OVER) {
             this.renderer.drawGameOver(this.score);
+        } else if (this.state === this.states.LEVEL_CELEBRATION) {
+            this.renderer.drawLevelCelebration(this.level, this.characterName);
         } else if (this.state === this.states.LEVEL_COMPLETE) {
             this.renderer.drawLevelComplete(this.level, this.nephewRescued, this.characterName);
         } else if (this.state === this.states.WIN) {

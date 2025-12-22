@@ -183,6 +183,33 @@ export class Renderer {
         this.ctx.restore();
     }
 
+    drawLevelCelebration(level, characterName = 'Felipe') {
+        this.ctx.save();
+
+        // Semi-transparent overlay to keep game visible but focused on celebration
+        this.ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+        this.ctx.fillRect(0, 0, this.width, this.height);
+
+        // Animated "RESCUED!" text at top
+        const pulse = 1 + Math.sin(Date.now() / 150) * 0.1;
+        this.ctx.font = `bold ${32 * pulse}px "Segoe UI", sans-serif`;
+        this.ctx.fillStyle = '#ff6b9d';
+        this.ctx.textAlign = 'center';
+        this.ctx.textBaseline = 'middle';
+        this.ctx.shadowBlur = 20;
+        this.ctx.shadowColor = '#ff6b9d';
+        this.ctx.fillText(`¡${characterName.toUpperCase()} RESCATADO${characterName === 'Julieta' ? 'A' : ''}!`, this.width / 2, 100);
+
+        // Level complete message below
+        this.ctx.shadowBlur = 15;
+        this.ctx.shadowColor = '#2ecc71';
+        this.ctx.font = 'bold 24px "Segoe UI", sans-serif';
+        this.ctx.fillStyle = '#2ecc71';
+        this.ctx.fillText(`¡NIVEL ${level} COMPLETADO!`, this.width / 2, 145);
+
+        this.ctx.restore();
+    }
+
     drawLevelComplete(level, characterRescued = false, characterName = 'Felipe') {
         this.ctx.save();
 
