@@ -214,10 +214,25 @@ canvas.addEventListener('touchend', (e) => {
 
 // Game loop
 let lastTime = 0;
+let frameCount = 0;
+let lastLoggedState = null;
 
 function gameLoop(timestamp) {
     const deltaTime = timestamp - lastTime;
     lastTime = timestamp;
+
+    // Log first few frames and any abnormal deltaTime
+    if (frameCount < 5 || deltaTime > 100) {
+        console.log(`[MAIN] Frame ${frameCount}: deltaTime=${deltaTime.toFixed(2)}ms, timestamp=${timestamp.toFixed(2)}, state=${game.state}`);
+    }
+
+    // Log state changes
+    if (lastLoggedState !== game.state) {
+        console.log(`[MAIN] ===== STATE CHANGE: ${lastLoggedState} -> ${game.state} ===== (frame ${frameCount}, deltaTime=${deltaTime.toFixed(2)}ms)`);
+        lastLoggedState = game.state;
+    }
+
+    frameCount++;
 
     game.update(deltaTime);
     game.render();

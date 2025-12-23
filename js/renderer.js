@@ -186,9 +186,18 @@ export class Renderer {
     drawLevelCelebration(level, characterName = 'Felipe') {
         this.ctx.save();
 
-        // Semi-transparent overlay to keep game visible but focused on celebration
-        this.ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
-        this.ctx.fillRect(0, 0, this.width, this.height);
+        // NO dark overlay - let the celebration effects be fully visible!
+        // Just draw a subtle backdrop behind the text so it's readable
+
+        // Text backdrop (small rounded rect at top)
+        this.ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+        const backdropWidth = 320;
+        const backdropHeight = 80;
+        const backdropX = (this.width - backdropWidth) / 2;
+        const backdropY = 60;
+        this.ctx.beginPath();
+        this.ctx.roundRect(backdropX, backdropY, backdropWidth, backdropHeight, 15);
+        this.ctx.fill();
 
         // Animated "RESCUED!" text at top
         const pulse = 1 + Math.sin(Date.now() / 150) * 0.1;
@@ -198,14 +207,14 @@ export class Renderer {
         this.ctx.textBaseline = 'middle';
         this.ctx.shadowBlur = 20;
         this.ctx.shadowColor = '#ff6b9d';
-        this.ctx.fillText(`¡${characterName.toUpperCase()} RESCATADO${characterName === 'Julieta' ? 'A' : ''}!`, this.width / 2, 100);
+        this.ctx.fillText(`¡${characterName.toUpperCase()} RESCATADO${characterName === 'Julieta' ? 'A' : ''}!`, this.width / 2, 85);
 
         // Level complete message below
         this.ctx.shadowBlur = 15;
         this.ctx.shadowColor = '#2ecc71';
-        this.ctx.font = 'bold 24px "Segoe UI", sans-serif';
+        this.ctx.font = 'bold 20px "Segoe UI", sans-serif';
         this.ctx.fillStyle = '#2ecc71';
-        this.ctx.fillText(`¡NIVEL ${level} COMPLETADO!`, this.width / 2, 145);
+        this.ctx.fillText(`¡NIVEL ${level} COMPLETADO!`, this.width / 2, 120);
 
         this.ctx.restore();
     }

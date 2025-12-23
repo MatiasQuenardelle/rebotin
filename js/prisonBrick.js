@@ -28,12 +28,14 @@ export class PrisonBrick {
     }
 
     hit() {
+        console.log(`[PRISON_BRICK] hit() called! Freeing nephew at position (${this.x}, ${this.y})`);
         this.alive = false;
         // Free the nephew!
         this.nephew.x = this.x + (this.width - 16) / 2;
         this.nephew.y = this.y + this.height / 2;
         this.nephew.startX = this.nephew.x;
         this.nephew.free();
+        console.log(`[PRISON_BRICK] Nephew freed at (${this.nephew.x}, ${this.nephew.y}), state=${this.nephew.state}`);
         return this.points;
     }
 

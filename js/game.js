@@ -107,6 +107,19 @@ export class Game {
     }
 
     update(deltaTime = 16) {
+        // DEBUG: Clamp deltaTime to prevent huge jumps on first frame or after tab switch
+        const originalDeltaTime = deltaTime;
+        if (deltaTime > 100) {
+            console.warn(`[GAME] CLAMPING deltaTime from ${deltaTime.toFixed(0)}ms to 16ms (first frame or tab switch)`);
+            deltaTime = 16;
+        }
+
+        // DEBUG: Log state changes
+        if (this._lastState !== this.state) {
+            console.log(`[GAME STATE] Changed: ${this._lastState} -> ${this.state} (deltaTime: ${deltaTime}, original: ${originalDeltaTime?.toFixed(0)})`);
+            this._lastState = this.state;
+        }
+
         // Handle menu -> character select
         if (this.state === this.states.MENU) {
             if (this.input.isLaunchPressed()) {
@@ -143,14 +156,47 @@ export class Game {
 
         // Handle level celebration - show rescue animation before level complete
         if (this.state === this.states.LEVEL_CELEBRATION) {
+            // Initialize celebration frame counter if needed
+            if (!this._celebrationFrameCount) {
+                this._celebrationFrameCount = 0;
+                this._celebrationStartTime = Date.now();
+                console.log(`[LEVEL_CELEBRATION] ===== STARTING CELEBRATION =====`);
+                console.log(`[LEVEL_CELEBRATION] Initial state: nephew=${!!this.nephew}, nephew.state=${this.nephew?.state}, celebrationComplete=${this.nephew?.celebrationComplete}, celebrationTimer=${this.nephew?.celebrationTimer}ms`);
+            }
+            this._celebrationFrameCount++;
+
+            // Log every 10 frames or first 5 frames
+            if (this._celebrationFrameCount <= 5 || this._celebrationFrameCount % 10 === 0) {
+                const elapsed = Date.now() - this._celebrationStartTime;
+                console.log(`[LEVEL_CELEBRATION] Frame ${this._celebrationFrameCount} (elapsed ${elapsed}ms): nephew.state=${this.nephew?.state}, timer=${this.nephew?.celebrationTimer?.toFixed(0)}/${this.nephew?.celebrationDuration}ms, complete=${this.nephew?.celebrationComplete}, deltaTime=${deltaTime?.toFixed(2)}ms`);
+                console.log(`[LEVEL_CELEBRATION] Effects: hearts=${this.nephew?.hearts?.length}, fireworks=${this.nephew?.fireworks?.length}, confetti=${this.nephew?.confetti?.length}, stars=${this.nephew?.stars?.length}`);
+            }
+
             // Keep updating the nephew animation
             if (this.nephew) {
+                const prevTimer = this.nephew.celebrationTimer;
+                const prevComplete = this.nephew.celebrationComplete;
+                const prevState = this.nephew.state;
+
                 this.nephew.update(this.paddle, this.canvas.height, deltaTime);
+
+                // Log if anything changed
+                if (prevTimer !== this.nephew.celebrationTimer || prevComplete !== this.nephew.celebrationComplete || prevState !== this.nephew.state) {
+                    console.log(`[LEVEL_CELEBRATION] After update: state ${prevState} -> ${this.nephew.state}, timer ${prevTimer?.toFixed(0)} -> ${this.nephew.celebrationTimer?.toFixed(0)}, complete ${prevComplete} -> ${this.nephew.celebrationComplete}`);
+                }
 
                 // Transition to level complete after celebration finishes
                 if (this.nephew.celebrationComplete) {
+                    console.log(`[LEVEL_CELEBRATION] ===== CELEBRATION COMPLETE after ${this._celebrationFrameCount} frames =====`);
+                    console.log(`[LEVEL_CELEBRATION] Total real time elapsed: ${Date.now() - this._celebrationStartTime}ms`);
+                    console.log(`[LEVEL_CELEBRATION] Transitioning to LEVEL_COMPLETE`);
+                    this._celebrationFrameCount = 0; // Reset for next time
                     this.state = this.states.LEVEL_COMPLETE;
                 }
+            } else {
+                console.warn(`[LEVEL_CELEBRATION] No nephew! Transitioning to LEVEL_COMPLETE immediately`);
+                this._celebrationFrameCount = 0;
+                this.state = this.states.LEVEL_COMPLETE;
             }
             return;
         }
@@ -160,9 +206,17 @@ export class Game {
             this.paddle.update(this.input);
 
             if (this.nephew) {
+                // Log every 500ms to track progress
+                if (!this._lastRescueLog || Date.now() - this._lastRescueLog > 500) {
+                    console.log(`[RESCUE_PHASE] nephew.state=${this.nephew.state}, nephewRescued=${this.nephewRescued}, celebrationComplete=${this.nephew.celebrationComplete}, celebrationTimer=${this.nephew.celebrationTimer?.toFixed(0)}ms, deltaTime=${deltaTime?.toFixed(2)}ms`);
+                    this._lastRescueLog = Date.now();
+                }
+
                 this.nephew.update(this.paddle, this.canvas.height, deltaTime);
 
                 if (this.nephew.state === 'rescued' && !this.nephewRescued) {
+                    console.log(`[RESCUE_PHASE] ===== NEPHEW JUST RESCUED! =====`);
+                    console.log(`[RESCUE_PHASE] Setting nephewRescued = true, celebrationTimer=${this.nephew.celebrationTimer}, celebrationComplete=${this.nephew.celebrationComplete}`);
                     this.nephewRescued = true;
                     this.score += 200;
                     // Don't transition immediately - wait for celebration animation
@@ -170,14 +224,19 @@ export class Game {
 
                 // Transition to level celebration screen after rescue animation finishes
                 if (this.nephewRescued && this.nephew.celebrationComplete) {
+                    console.log(`[RESCUE_PHASE] ===== RESCUE CELEBRATION COMPLETE =====`);
+                    console.log(`[RESCUE_PHASE] Transitioning to LEVEL_CELEBRATION`);
+                    console.log(`[RESCUE_PHASE] Resetting: celebrationComplete=false, celebrationTimer=0`);
                     this.state = this.states.LEVEL_CELEBRATION;
                     // Keep the celebration going with fresh effects
                     this.nephew.celebrationComplete = false;
                     this.nephew.celebrationTimer = 0;
                     this.nephew.createCelebrationEffects();
+                    console.log(`[RESCUE_PHASE] After reset: celebrationComplete=${this.nephew.celebrationComplete}, celebrationTimer=${this.nephew.celebrationTimer}`);
                 }
 
                 if (this.nephew.state === 'lost') {
+                    console.log(`[RESCUE_PHASE] Nephew lost!`);
                     this.state = this.states.CHARACTER_LOST;
                 }
             }
@@ -298,18 +357,36 @@ export class Game {
 
         // Check for level complete (all breakable bricks destroyed)
         if (this.checkWin()) {
+            console.log(`[PLAYING] ===== WIN CONDITION MET =====`);
+            console.log(`[PLAYING] checkWin() returned true! nephewRescued: ${this.nephewRescued}, nephew exists: ${!!this.nephew}`);
+            console.log(`[PLAYING] Nephew details: state=${this.nephew?.state}, celebrationComplete=${this.nephew?.celebrationComplete}, celebrationTimer=${this.nephew?.celebrationTimer}`);
+            console.log(`[PLAYING] CRITICAL CHECK - nephew._celebrationUpdateCount=${this.nephew?._celebrationUpdateCount}, nephew._loggedAlreadyComplete=${this.nephew?._loggedAlreadyComplete}`);
+
             // Start the level celebration with the character
             if (this.nephew && this.nephewRescued) {
+                console.log(`[PLAYING] Starting LEVEL_CELEBRATION with rescued nephew`);
                 // Position nephew on paddle for celebration
                 this.nephew.x = this.paddle.x + this.paddle.width / 2 - this.nephew.width / 2;
                 this.nephew.y = this.paddle.y - this.nephew.height;
-                // Reset and start celebration
+
+                // Reset and start celebration - FORCE state to rescued
+                console.log(`[PLAYING] BEFORE reset: celebrationComplete=${this.nephew.celebrationComplete}, celebrationTimer=${this.nephew.celebrationTimer}, state=${this.nephew.state}`);
+
+                // CRITICAL: Reset all celebration tracking
+                this.nephew.state = 'rescued';  // Ensure state is rescued
                 this.nephew.celebrationComplete = false;
                 this.nephew.celebrationTimer = 0;
+                this.nephew._celebrationUpdateCount = 0;  // Reset update counter
+                this.nephew._loggedAlreadyComplete = false;  // Reset log flag
+
+                console.log(`[PLAYING] AFTER reset: celebrationComplete=${this.nephew.celebrationComplete}, celebrationTimer=${this.nephew.celebrationTimer}, state=${this.nephew.state}`);
                 this.nephew.createCelebrationEffects();
+                console.log(`[PLAYING] Created celebration effects, effects counts: hearts=${this.nephew.hearts?.length}, fireworks=${this.nephew.fireworks?.length}, confetti=${this.nephew.confetti?.length}, stars=${this.nephew.stars?.length}`);
+                console.log(`[PLAYING] Transitioning to LEVEL_CELEBRATION NOW`);
                 this.state = this.states.LEVEL_CELEBRATION;
             } else {
                 // No rescued character, go straight to level complete
+                console.log(`[PLAYING] No rescued nephew (nephewRescued=${this.nephewRescued}, nephew=${!!this.nephew}), going straight to LEVEL_COMPLETE`);
                 this.state = this.states.LEVEL_COMPLETE;
             }
         }
@@ -353,11 +430,20 @@ export class Game {
 
     checkWin() {
         // Only check breakable bricks (not indestructible)
-        const allBricksDestroyed = this.bricks.every(brick => !brick.alive || brick.indestructible);
+        const breakableBricks = this.bricks.filter(brick => !brick.indestructible);
+        const aliveBricks = breakableBricks.filter(brick => brick.alive);
+        const allBricksDestroyed = aliveBricks.length === 0;
+
         // In rescue phase, just need to catch nephew
         if (this.state === this.states.RESCUE_PHASE) {
             return this.nephewRescued;
         }
+
+        // Log occasionally to avoid spam
+        if (allBricksDestroyed) {
+            console.log(`[checkWin] All bricks destroyed! Total breakable: ${breakableBricks.length}, Alive: ${aliveBricks.length}`);
+        }
+
         return allBricksDestroyed;
     }
 
@@ -426,7 +512,12 @@ export class Game {
         } else if (this.state === this.states.GAME_OVER) {
             this.renderer.drawGameOver(this.score);
         } else if (this.state === this.states.LEVEL_CELEBRATION) {
+            // Draw the text overlay first (no full-screen darkening)
             this.renderer.drawLevelCelebration(this.level, this.characterName);
+            // Then render nephew effects ON TOP so fireworks/confetti are fully visible
+            if (this.nephew) {
+                this.nephew.render(this.ctx);
+            }
         } else if (this.state === this.states.LEVEL_COMPLETE) {
             this.renderer.drawLevelComplete(this.level, this.nephewRescued, this.characterName);
         } else if (this.state === this.states.WIN) {

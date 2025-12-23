@@ -40,11 +40,12 @@ export class Nephew {
 
         // Celebration timing
         this.celebrationTimer = 0;
-        this.celebrationDuration = 3000; // 3 seconds of celebration
+        this.celebrationDuration = 4000; // 4 seconds of celebration for better visibility
         this.celebrationComplete = false;
     }
 
     free() {
+        console.log(`[NEPHEW] free() called! Previous state: ${this.state}`);
         this.state = 'falling';
         this.parachuteOpen = true;
         // Create initial sparkles when freed
@@ -58,12 +59,15 @@ export class Nephew {
                 size: Math.random() * 3 + 2
             });
         }
+        console.log(`[NEPHEW] After free(): state=${this.state}, parachuteOpen=${this.parachuteOpen}`);
     }
 
     rescue() {
+        console.log(`[NEPHEW] rescue() called! Previous state: ${this.state}, celebrationTimer: ${this.celebrationTimer}, celebrationComplete: ${this.celebrationComplete}`);
         this.state = 'rescued';
         this.celebrationTimer = 0;
         this.celebrationComplete = false;
+        console.log(`[NEPHEW] After rescue(): state=${this.state}, celebrationTimer=${this.celebrationTimer}, celebrationComplete=${this.celebrationComplete}`);
 
         // Create initial celebration effects
         this.createCelebrationEffects();
@@ -73,48 +77,50 @@ export class Nephew {
         const centerX = this.x + this.width / 2;
         const centerY = this.y;
 
-        // Create hearts around character
-        for (let i = 0; i < 8; i++) {
+        // Create lots of hearts around character
+        for (let i = 0; i < 15; i++) {
             this.hearts.push({
-                x: centerX + (Math.random() - 0.5) * 30,
-                y: centerY + (Math.random() - 0.5) * 20,
+                x: centerX + (Math.random() - 0.5) * 50,
+                y: centerY + (Math.random() - 0.5) * 30,
                 vy: -Math.random() * 2 - 1,
                 vx: (Math.random() - 0.5) * 2,
                 life: 1,
-                size: Math.random() * 8 + 6
+                size: Math.random() * 10 + 8
             });
         }
 
-        // Create fireworks bursts
-        this.createFireworkBurst(centerX - 60, centerY - 40, '#ff6b6b');
-        this.createFireworkBurst(centerX + 60, centerY - 40, '#ffd93d');
-        this.createFireworkBurst(centerX, centerY - 70, '#6bcb77');
+        // Create multiple fireworks bursts across the screen
+        this.createFireworkBurst(centerX - 80, centerY - 50, '#ff6b6b');
+        this.createFireworkBurst(centerX + 80, centerY - 50, '#ffd93d');
+        this.createFireworkBurst(centerX, centerY - 90, '#6bcb77');
+        this.createFireworkBurst(centerX - 40, centerY - 120, '#4ecdc4');
+        this.createFireworkBurst(centerX + 40, centerY - 120, '#ff6b9d');
 
         // Create star burst around character
-        for (let i = 0; i < 12; i++) {
-            const angle = (i / 12) * Math.PI * 2;
+        for (let i = 0; i < 20; i++) {
+            const angle = (i / 20) * Math.PI * 2;
             this.stars.push({
                 x: centerX,
                 y: centerY,
-                vx: Math.cos(angle) * 3,
-                vy: Math.sin(angle) * 3,
+                vx: Math.cos(angle) * 4,
+                vy: Math.sin(angle) * 4,
                 life: 1,
-                size: Math.random() * 4 + 3,
-                color: ['#ffd700', '#ff6b9d', '#00ffff', '#ff69b4'][Math.floor(Math.random() * 4)],
+                size: Math.random() * 5 + 4,
+                color: ['#ffd700', '#ff6b9d', '#00ffff', '#ff69b4', '#7fff00'][Math.floor(Math.random() * 5)],
                 rotation: Math.random() * Math.PI * 2,
                 rotationSpeed: (Math.random() - 0.5) * 0.3
             });
         }
 
-        // Create confetti shower
-        for (let i = 0; i < 20; i++) {
+        // Create heavy confetti shower
+        for (let i = 0; i < 40; i++) {
             this.confetti.push({
-                x: centerX + (Math.random() - 0.5) * 100,
-                y: centerY - 50 - Math.random() * 30,
+                x: centerX + (Math.random() - 0.5) * 150,
+                y: centerY - 60 - Math.random() * 50,
                 vx: (Math.random() - 0.5) * 4,
                 vy: Math.random() * 2 + 1,
                 life: 1,
-                size: Math.random() * 6 + 4,
+                size: Math.random() * 8 + 5,
                 color: ['#ff6b6b', '#ffd93d', '#6bcb77', '#4ecdc4', '#ff6b9d', '#a855f7'][Math.floor(Math.random() * 6)],
                 rotation: Math.random() * Math.PI * 2,
                 rotationSpeed: (Math.random() - 0.5) * 0.2,
@@ -124,17 +130,17 @@ export class Nephew {
     }
 
     createFireworkBurst(x, y, baseColor) {
-        const particleCount = 15;
+        const particleCount = 25; // More particles for bigger bursts
         for (let i = 0; i < particleCount; i++) {
             const angle = (i / particleCount) * Math.PI * 2;
-            const speed = 2 + Math.random() * 2;
+            const speed = 3 + Math.random() * 3; // Faster spread
             this.fireworks.push({
                 x: x,
                 y: y,
                 vx: Math.cos(angle) * speed,
                 vy: Math.sin(angle) * speed,
                 life: 1,
-                size: Math.random() * 3 + 2,
+                size: Math.random() * 4 + 3, // Bigger particles
                 color: baseColor,
                 trail: []
             });
@@ -145,19 +151,19 @@ export class Nephew {
         const centerX = this.x + this.width / 2;
         const centerY = this.y;
 
-        // Random firework bursts (more frequent)
-        if (Math.random() < 0.25) {
-            const offsetX = (Math.random() - 0.5) * 200;
-            const offsetY = -30 - Math.random() * 100;
-            const colors = ['#ff6b6b', '#ffd93d', '#6bcb77', '#4ecdc4', '#ff6b9d', '#a855f7'];
+        // Random firework bursts - VERY frequent for impressive display
+        if (Math.random() < 0.45) {
+            const offsetX = (Math.random() - 0.5) * 250;
+            const offsetY = -50 - Math.random() * 120;
+            const colors = ['#ff6b6b', '#ffd93d', '#6bcb77', '#4ecdc4', '#ff6b9d', '#a855f7', '#ff4500', '#00ff00'];
             this.createFireworkBurst(centerX + offsetX, centerY + offsetY, colors[Math.floor(Math.random() * colors.length)]);
         }
 
-        // More confetti (more frequent)
-        if (Math.random() < 0.5) {
+        // More confetti - raining down constantly
+        if (Math.random() < 0.7) {
             this.confetti.push({
-                x: centerX + (Math.random() - 0.5) * 150,
-                y: centerY - 80,
+                x: centerX + (Math.random() - 0.5) * 200,
+                y: centerY - 100,
                 vx: (Math.random() - 0.5) * 3,
                 vy: Math.random() * 1.5 + 0.5,
                 life: 1,
@@ -169,10 +175,10 @@ export class Nephew {
             });
         }
 
-        // More hearts (more frequent)
-        if (Math.random() < 0.35) {
+        // More hearts floating up
+        if (Math.random() < 0.5) {
             this.hearts.push({
-                x: centerX + (Math.random() - 0.5) * 60,
+                x: centerX + (Math.random() - 0.5) * 80,
                 y: centerY,
                 vy: -Math.random() * 2.5 - 1,
                 vx: (Math.random() - 0.5) * 2,
@@ -181,8 +187,8 @@ export class Nephew {
             });
         }
 
-        // Add stars burst occasionally
-        if (Math.random() < 0.15) {
+        // Add stars burst more frequently
+        if (Math.random() < 0.3) {
             const angle = Math.random() * Math.PI * 2;
             this.stars.push({
                 x: centerX,
@@ -255,13 +261,50 @@ export class Nephew {
 
         // Handle celebration timer
         if (this.state === 'rescued' && !this.celebrationComplete) {
-            this.celebrationTimer += deltaTime;
+            // Track celebration updates
+            if (!this._celebrationUpdateCount) {
+                this._celebrationUpdateCount = 0;
+                console.log(`[NEPHEW] ===== FIRST CELEBRATION UPDATE =====`);
+                console.log(`[NEPHEW] Initial: timer=${this.celebrationTimer}, complete=${this.celebrationComplete}, deltaTime=${deltaTime}`);
+            }
+            this._celebrationUpdateCount++;
+
+            const prevTimer = this.celebrationTimer;
+            const deltaToAdd = deltaTime || 16; // Fallback to 16ms if deltaTime is undefined/0
+
+            // SAFETY: Clamp deltaTime to prevent instant completion
+            const clampedDelta = Math.min(deltaToAdd, 50);
+            if (deltaToAdd !== clampedDelta) {
+                console.warn(`[NEPHEW] CLAMPING celebration deltaTime from ${deltaToAdd.toFixed(0)}ms to ${clampedDelta}ms`);
+            }
+
+            this.celebrationTimer += clampedDelta;
+
+            // Log first 10 updates and every 30 updates after
+            if (this._celebrationUpdateCount <= 10 || this._celebrationUpdateCount % 30 === 0) {
+                console.log(`[NEPHEW] Celebration update #${this._celebrationUpdateCount}: timer ${prevTimer?.toFixed(0)} + ${clampedDelta?.toFixed(2)} = ${this.celebrationTimer.toFixed(0)}ms / ${this.celebrationDuration}ms (${(this.celebrationTimer / this.celebrationDuration * 100).toFixed(1)}%)`);
+            }
 
             // Keep spawning effects during celebration
             this.spawnMoreEffects();
 
             if (this.celebrationTimer >= this.celebrationDuration) {
+                console.log(`[NEPHEW] ===== CELEBRATION COMPLETE =====`);
+                console.log(`[NEPHEW] After ${this._celebrationUpdateCount} updates, timer=${this.celebrationTimer.toFixed(0)}ms >= duration=${this.celebrationDuration}ms`);
                 this.celebrationComplete = true;
+                this._celebrationUpdateCount = 0; // Reset for next time
+            }
+        } else if (this.state !== 'rescued') {
+            // Log if state is not rescued during what should be celebration
+            if (this._lastLoggedState !== this.state) {
+                console.log(`[NEPHEW] Not updating celebration timer because state=${this.state} (not 'rescued'), celebrationComplete=${this.celebrationComplete}`);
+                this._lastLoggedState = this.state;
+            }
+        } else if (this.celebrationComplete) {
+            // Log if celebration is already complete
+            if (!this._loggedAlreadyComplete) {
+                console.log(`[NEPHEW] Celebration already complete, skipping timer update. timer=${this.celebrationTimer}, complete=${this.celebrationComplete}`);
+                this._loggedAlreadyComplete = true;
             }
         }
 
@@ -300,7 +343,14 @@ export class Nephew {
 
         // Handle landing state - show parachute folding before celebration
         if (this.state === 'landing') {
-            this.landingTimer += deltaTime;
+            const prevLandingTimer = this.landingTimer;
+            const deltaToAdd = deltaTime || 16;
+            this.landingTimer += deltaToAdd;
+
+            // Log every 300ms
+            if (Math.floor(prevLandingTimer / 300) !== Math.floor(this.landingTimer / 300)) {
+                console.log(`[NEPHEW] Landing progress: ${this.landingTimer.toFixed(0)}ms / ${this.landingDuration}ms (deltaTime=${deltaToAdd?.toFixed(2)}ms)`);
+            }
 
             // Fold parachute animation
             if (this.parachuteSize > 0) {
@@ -313,7 +363,10 @@ export class Nephew {
 
             // After delay, transition to rescued state with celebration
             if (this.landingTimer >= this.landingDuration) {
+                console.log(`[NEPHEW] ===== LANDING COMPLETE =====`);
+                console.log(`[NEPHEW] Calling rescue(), current celebrationTimer=${this.celebrationTimer}, celebrationComplete=${this.celebrationComplete}`);
                 this.rescue();
+                console.log(`[NEPHEW] After rescue(): state=${this.state}, celebrationTimer=${this.celebrationTimer}, celebrationComplete=${this.celebrationComplete}`);
             }
         }
 
