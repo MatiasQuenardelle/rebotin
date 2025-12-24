@@ -489,14 +489,14 @@ body {
         display: none !important;
     }
 
-    /* Canvas fills screen - scaled up to be bigger */
+    /* Canvas fills screen completely */
     #gameCanvas {
         position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%) scale(1.15);
-        width: auto !important;
+        top: 0;
+        left: 0;
+        width: 100vw !important;
         height: 100vh !important;
+        object-fit: fill;
         border-radius: 0;
     }
 
