@@ -424,15 +424,15 @@ body {
         bottom: max(8px, env(safe-area-inset-bottom));
     }
 
-    /* Canvas fills the screen - scaled up to use more horizontal space */
+    /* Canvas fills the screen - use full height, auto width */
     #gameCanvas {
         position: absolute;
-        top: 50%;
+        top: 0;
         left: 50%;
-        transform: translate(-50%, -50%) scale(1.25);
-        width: 100% !important;
-        height: 100% !important;
-        object-fit: contain;
+        transform: translateX(-50%);
+        width: auto !important;
+        height: 100vh !important;
+        max-width: none;
         border-radius: 0;
     }
 
