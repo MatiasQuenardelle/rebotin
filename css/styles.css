@@ -418,21 +418,19 @@ body {
         right: max(8px, env(safe-area-inset-right));
     }
 
-    /* Show weapon wheel */
+    /* Hide weapon wheel - it covers the paddle */
     .weapon-wheel {
-        display: flex;
-        bottom: max(8px, env(safe-area-inset-bottom));
+        display: none !important;
     }
 
-    /* Canvas as large as possible - slight scale to fill more space */
+    /* Canvas fills screen from top */
     #gameCanvas {
         position: absolute;
-        top: 50%;
+        top: 0;
         left: 50%;
-        transform: translate(-50%, -50%) scale(1.08);
-        width: 100vw !important;
+        transform: translateX(-50%);
+        width: auto !important;
         height: 100vh !important;
-        object-fit: contain;
         border-radius: 0;
     }
 
