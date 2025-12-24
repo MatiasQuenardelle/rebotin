@@ -21,6 +21,12 @@ export class Nephew {
         this.swayOffset = 0;
         this.startX = x;
 
+        // Wind effect properties
+        this.windStrength = 0;
+        this.windDirection = 1; // 1 for right, -1 for left
+        this.windChangeTimer = 0;
+        this.windChangeDuration = 60; // Change wind every 60 frames (~1 second)
+
         // Parachute
         this.parachuteOpen = false;
         this.parachuteSize = 0;
@@ -458,9 +464,23 @@ export class Nephew {
                 this.parachuteSize += 2;
             }
 
-            // Gentle swaying motion
+            // Wind effect - changes direction and strength periodically
+            this.windChangeTimer++;
+            if (this.windChangeTimer >= this.windChangeDuration) {
+                this.windChangeTimer = 0;
+                // Randomly change wind direction
+                this.windDirection = Math.random() > 0.5 ? 1 : -1;
+                // Vary wind strength (0.5 to 2.5)
+                this.windStrength = Math.random() * 2 + 0.5;
+            }
+
+            // Smooth wind effect - gradually apply wind force
+            const windForce = Math.sin(this.windChangeTimer / this.windChangeDuration * Math.PI) *
+                              this.windStrength * this.windDirection;
+
+            // Gentle swaying motion with wind effect
             this.swayOffset += this.swaySpeed;
-            this.x = this.startX + Math.sin(this.swayOffset) * this.swayAmplitude;
+            this.x = this.startX + Math.sin(this.swayOffset) * this.swayAmplitude + windForce * 3;
 
             // Fall down slowly
             this.y += this.fallSpeed;
