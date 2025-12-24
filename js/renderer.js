@@ -222,9 +222,18 @@ export class Renderer {
     drawLevelComplete(level, characterRescued = false, characterName = 'Felipe') {
         this.ctx.save();
 
-        // Darken background
-        this.ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-        this.ctx.fillRect(0, 0, this.width, this.height);
+        // NO dark overlay - keep the game visible!
+        // Just draw a subtle backdrop behind the text so it's readable
+
+        // Text backdrop
+        this.ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
+        const backdropWidth = 450;
+        const backdropHeight = 160;
+        const backdropX = (this.width - backdropWidth) / 2;
+        const backdropY = this.height / 2 - 80;
+        this.ctx.beginPath();
+        this.ctx.roundRect(backdropX, backdropY, backdropWidth, backdropHeight, 15);
+        this.ctx.fill();
 
         // Level Complete text
         this.ctx.font = 'bold 36px "Segoe UI", sans-serif';
@@ -351,38 +360,51 @@ export class Renderer {
         this.ctx.restore();
     }
 
-    drawLaserTimer(percentage) {
+    drawPowerUpTimers(activeTimers) {
         this.ctx.save();
 
         const barWidth = 100;
         const barHeight = 8;
-        const x = this.width - barWidth - 30;
-        const y = 38;
+        const barSpacing = 16;
+        const startX = this.width - barWidth - 30;
+        let startY = 38;
 
-        // Background
-        this.ctx.fillStyle = 'rgba(50, 50, 50, 0.8)';
-        this.ctx.beginPath();
-        this.ctx.roundRect(x, y, barWidth, barHeight, 4);
-        this.ctx.fill();
+        const timerConfig = {
+            laser: { color: '#ff4444', label: 'LASER' },
+            inverse: { color: '#9b59b6', label: 'INVERSE' },
+            expand: { color: '#2ecc71', label: 'EXPAND' },
+            shrink: { color: '#e74c3c', label: 'SHRINK' }
+        };
 
-        // Filled portion
-        const gradient = this.ctx.createLinearGradient(x, y, x + barWidth, y);
-        gradient.addColorStop(0, '#ff4444');
-        gradient.addColorStop(1, '#ff8888');
-        this.ctx.fillStyle = gradient;
-        this.ctx.shadowBlur = 5;
-        this.ctx.shadowColor = '#ff4444';
-        this.ctx.beginPath();
-        this.ctx.roundRect(x, y, barWidth * percentage, barHeight, 4);
-        this.ctx.fill();
+        activeTimers.forEach((timer, index) => {
+            const config = timerConfig[timer.type];
+            const y = startY + (index * barSpacing);
 
-        // Label
-        this.ctx.shadowBlur = 0;
-        this.ctx.font = 'bold 10px "Segoe UI", sans-serif';
-        this.ctx.fillStyle = '#ff4444';
-        this.ctx.textAlign = 'right';
-        this.ctx.textBaseline = 'bottom';
-        this.ctx.fillText('LASER', x - 5, y + barHeight);
+            // Background
+            this.ctx.fillStyle = 'rgba(50, 50, 50, 0.8)';
+            this.ctx.beginPath();
+            this.ctx.roundRect(startX, y, barWidth, barHeight, 4);
+            this.ctx.fill();
+
+            // Filled portion
+            const gradient = this.ctx.createLinearGradient(startX, y, startX + barWidth, y);
+            gradient.addColorStop(0, config.color);
+            gradient.addColorStop(1, config.color + 'aa');
+            this.ctx.fillStyle = gradient;
+            this.ctx.shadowBlur = 5;
+            this.ctx.shadowColor = config.color;
+            this.ctx.beginPath();
+            this.ctx.roundRect(startX, y, barWidth * timer.percentage, barHeight, 4);
+            this.ctx.fill();
+
+            // Label
+            this.ctx.shadowBlur = 0;
+            this.ctx.font = 'bold 10px "Segoe UI", sans-serif';
+            this.ctx.fillStyle = config.color;
+            this.ctx.textAlign = 'right';
+            this.ctx.textBaseline = 'bottom';
+            this.ctx.fillText(config.label, startX - 5, y + barHeight);
+        });
 
         this.ctx.restore();
     }

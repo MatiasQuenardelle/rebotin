@@ -1,13 +1,46 @@
 export class PowerUp {
-    constructor(x, y) {
+    constructor(x, y, type = null) {
         this.x = x;
         this.y = y;
         this.width = 24;
         this.height = 24;
-        this.type = 'laser'; // For now, only laser power-up
+
+        // Random type if not specified
+        const types = ['laser', 'inverse', 'expand', 'shrink'];
+        this.type = type || types[Math.floor(Math.random() * types.length)];
+
         this.fallSpeed = 2;
         this.rotation = 0;
         this.pulseTimer = 0;
+
+        // Type-specific properties
+        this.config = this.getTypeConfig();
+    }
+
+    getTypeConfig() {
+        const configs = {
+            laser: {
+                color: '#ff4444',
+                glowColor: '#ff4444',
+                icon: 'laser'
+            },
+            inverse: {
+                color: '#9b59b6',
+                glowColor: '#9b59b6',
+                icon: 'inverse'
+            },
+            expand: {
+                color: '#2ecc71',
+                glowColor: '#2ecc71',
+                icon: 'expand'
+            },
+            shrink: {
+                color: '#e74c3c',
+                glowColor: '#e74c3c',
+                icon: 'shrink'
+            }
+        };
+        return configs[this.type] || configs.laser;
     }
 
     update() {
@@ -35,10 +68,10 @@ export class PowerUp {
 
         // Glow effect
         ctx.shadowBlur = 15;
-        ctx.shadowColor = '#ff4444';
+        ctx.shadowColor = this.config.glowColor;
 
         // Outer capsule
-        ctx.fillStyle = '#ff4444';
+        ctx.fillStyle = this.config.color;
         ctx.beginPath();
         ctx.roundRect(-this.width / 2, -this.height / 2, this.width, this.height, 6);
         ctx.fill();
@@ -53,19 +86,97 @@ export class PowerUp {
         ctx.roundRect(-this.width / 2, -this.height / 2, this.width, this.height, 6);
         ctx.fill();
 
-        // Laser icon (lightning bolt shape)
+        // Draw type-specific icon
         ctx.shadowBlur = 0;
         ctx.fillStyle = '#ffffff';
-        ctx.beginPath();
-        ctx.moveTo(-3, -8);
-        ctx.lineTo(4, -2);
-        ctx.lineTo(0, -2);
-        ctx.lineTo(3, 8);
-        ctx.lineTo(-4, 2);
-        ctx.lineTo(0, 2);
-        ctx.closePath();
-        ctx.fill();
+        this.drawIcon(ctx);
 
         ctx.restore();
+    }
+
+    drawIcon(ctx) {
+        switch (this.config.icon) {
+            case 'laser':
+                // Lightning bolt shape
+                ctx.beginPath();
+                ctx.moveTo(-3, -8);
+                ctx.lineTo(4, -2);
+                ctx.lineTo(0, -2);
+                ctx.lineTo(3, 8);
+                ctx.lineTo(-4, 2);
+                ctx.lineTo(0, 2);
+                ctx.closePath();
+                ctx.fill();
+                break;
+
+            case 'inverse':
+                // Crossed arrows (inverted controls)
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 2;
+                ctx.lineCap = 'round';
+                // Arrow pointing right (labeled left)
+                ctx.beginPath();
+                ctx.moveTo(-7, -5);
+                ctx.lineTo(2, -5);
+                ctx.lineTo(-2, -8);
+                ctx.moveTo(2, -5);
+                ctx.lineTo(-2, -2);
+                ctx.stroke();
+                // Arrow pointing left (labeled right)
+                ctx.beginPath();
+                ctx.moveTo(7, 5);
+                ctx.lineTo(-2, 5);
+                ctx.lineTo(2, 2);
+                ctx.moveTo(-2, 5);
+                ctx.lineTo(2, 8);
+                ctx.stroke();
+                break;
+
+            case 'expand':
+                // Double arrows pointing outward (expand)
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 2.5;
+                ctx.lineCap = 'round';
+                // Left arrow
+                ctx.beginPath();
+                ctx.moveTo(-2, 0);
+                ctx.lineTo(-7, 0);
+                ctx.lineTo(-4, -3);
+                ctx.moveTo(-7, 0);
+                ctx.lineTo(-4, 3);
+                ctx.stroke();
+                // Right arrow
+                ctx.beginPath();
+                ctx.moveTo(2, 0);
+                ctx.lineTo(7, 0);
+                ctx.lineTo(4, -3);
+                ctx.moveTo(7, 0);
+                ctx.lineTo(4, 3);
+                ctx.stroke();
+                break;
+
+            case 'shrink':
+                // Double arrows pointing inward (shrink)
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 2.5;
+                ctx.lineCap = 'round';
+                // Left arrow
+                ctx.beginPath();
+                ctx.moveTo(-7, 0);
+                ctx.lineTo(-2, 0);
+                ctx.lineTo(-5, -3);
+                ctx.moveTo(-2, 0);
+                ctx.lineTo(-5, 3);
+                ctx.stroke();
+                // Right arrow
+                ctx.beginPath();
+                ctx.moveTo(7, 0);
+                ctx.lineTo(2, 0);
+                ctx.lineTo(5, -3);
+                ctx.moveTo(2, 0);
+                ctx.lineTo(5, 3);
+                ctx.stroke();
+                break;
+        }
     }
 }

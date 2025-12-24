@@ -64,15 +64,15 @@ const LEVEL_PATTERNS = [
         'XCXCXPXCXC',
         'R R R R R '
     ],
-    // Level 8 - Castle with protected nephew
+    // Level 8 - Castle with protected nephew (fixed: fewer unbreakable blocks)
     [
         '  XRRRRX  ',
         ' XOOOOOOX ',
-        'XYYYYYYYY X',
-        'XGGG  GGGX',
-        'X  XPPX  X',
-        'XCCCCCCCCX',
-        'XXXXXXXXXX'
+        ' YYYYYYYYY',
+        ' GGG  GGG ',
+        '   XPPX   ',
+        ' CCCCCCC  ',
+        'X        X'
     ],
     // Level 9 - Ultimate challenge
     [
@@ -108,6 +108,9 @@ export function createLevel(levelNumber, canvasWidth, characterName = 'Felipe') 
 
     const startY = 60;
 
+    // First pass: collect all potential breakable brick positions
+    const breakableBrickPositions = [];
+
     for (let row = 0; row < pattern.length; row++) {
         const rowPattern = pattern[row];
         for (let col = 0; col < Math.min(rowPattern.length, cols); col++) {
@@ -116,15 +119,42 @@ export function createLevel(levelNumber, canvasWidth, characterName = 'Felipe') 
             const y = startY + row * (brickHeight + brickGap);
 
             if (char === 'P') {
-                // Create prison brick with character (only one per level)
-                if (!prisonBrick) {
-                    prisonBrick = new PrisonBrick(x, y, brickWidth, brickHeight, characterName);
-                    bricks.push(prisonBrick);
-                }
+                // Mark this position as a potential prison brick location
+                breakableBrickPositions.push({ x, y, row, col });
+            } else if (char !== ' ' && char !== 'X' && COLOR_MAP[char]) {
+                // This is a breakable brick position
+                breakableBrickPositions.push({ x, y, row, col, color: char });
+            }
+        }
+    }
+
+    // Randomly select one breakable position for the prison brick
+    let prisonPosition = null;
+    if (breakableBrickPositions.length > 0) {
+        const randomIndex = Math.floor(Math.random() * breakableBrickPositions.length);
+        prisonPosition = breakableBrickPositions[randomIndex];
+    }
+
+    // Second pass: create the actual bricks
+    for (let row = 0; row < pattern.length; row++) {
+        const rowPattern = pattern[row];
+        for (let col = 0; col < Math.min(rowPattern.length, cols); col++) {
+            const char = rowPattern[col];
+            const x = padding + col * (brickWidth + brickGap);
+            const y = startY + row * (brickHeight + brickGap);
+
+            // Check if this position was selected for the prison brick
+            const isPrisonPosition = prisonPosition && prisonPosition.row === row && prisonPosition.col === col;
+
+            if (isPrisonPosition && !prisonBrick) {
+                // Create prison brick at this random position
+                prisonBrick = new PrisonBrick(x, y, brickWidth, brickHeight, characterName);
+                bricks.push(prisonBrick);
             } else if (char === 'X') {
                 // Indestructible steel brick
                 bricks.push(new Brick(x, y, brickWidth, brickHeight, '#5a5a6a', 0, true));
-            } else if (char !== ' ' && COLOR_MAP[char]) {
+            } else if (char !== ' ' && char !== 'P' && COLOR_MAP[char]) {
+                // Regular breakable brick (skip 'P' markers since we placed prison randomly)
                 const brickInfo = COLOR_MAP[char];
                 bricks.push(new Brick(x, y, brickWidth, brickHeight, brickInfo.color, brickInfo.points));
             }

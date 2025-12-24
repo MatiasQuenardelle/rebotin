@@ -203,7 +203,7 @@ export class Game {
 
         // Handle rescue phase - ball is gone, just catch the nephew
         if (this.state === this.states.RESCUE_PHASE) {
-            this.paddle.update(this.input);
+            this.paddle.update(this.input, deltaTime);
 
             if (this.nephew) {
                 // Log every 500ms to track progress
@@ -246,7 +246,7 @@ export class Game {
         if (this.state !== this.states.PLAYING) return;
 
         // Update paddle
-        this.paddle.update(this.input);
+        this.paddle.update(this.input, deltaTime);
 
         // Update laser timer
         if (this.laserActive) {
@@ -404,11 +404,26 @@ export class Game {
     }
 
     activatePowerUp(powerUp) {
-        if (powerUp.type === 'laser') {
-            this.laserActive = true;
-            this.laserTimer = this.laserDuration;
-            this.paddle.laserMode = true;
-            this.score += 25;
+        this.score += 25; // Base points for collecting any power-up
+
+        switch (powerUp.type) {
+            case 'laser':
+                this.laserActive = true;
+                this.laserTimer = this.laserDuration;
+                this.paddle.laserMode = true;
+                break;
+
+            case 'inverse':
+                this.paddle.applyInverseControls(8000); // 8 seconds
+                break;
+
+            case 'expand':
+                this.paddle.applyExpand(10000); // 10 seconds
+                break;
+
+            case 'shrink':
+                this.paddle.applyShrink(10000); // 10 seconds
+                break;
         }
     }
 
@@ -494,9 +509,20 @@ export class Game {
             this.renderer.drawRescueStatus(this.nephewFreed, this.nephewRescued, this.characterName);
         }
 
-        // Draw laser timer
+        // Draw power-up timers
+        const activeTimers = [];
         if (this.laserActive) {
-            this.renderer.drawLaserTimer(this.laserTimer / this.laserDuration);
+            activeTimers.push({ type: 'laser', percentage: this.laserTimer / this.laserDuration });
+        }
+        if (this.paddle.inverseTimer > 0) {
+            activeTimers.push({ type: 'inverse', percentage: this.paddle.inverseTimer / 8000 });
+        }
+        if (this.paddle.sizeTimer > 0) {
+            const type = this.paddle.sizeModifier > 1 ? 'expand' : 'shrink';
+            activeTimers.push({ type, percentage: this.paddle.sizeTimer / 10000 });
+        }
+        if (activeTimers.length > 0) {
+            this.renderer.drawPowerUpTimers(activeTimers);
         }
 
         // Draw rescue phase message
