@@ -237,23 +237,14 @@ export class Renderer {
         this.ctx.roundRect(backdropX, backdropY, backdropWidth, backdropHeight, 15);
         this.ctx.fill();
 
-        // Level Complete text
+        // Level Complete text (centered)
         this.ctx.font = 'bold 36px "Segoe UI", sans-serif';
         this.ctx.fillStyle = '#2ecc71';
         this.ctx.textAlign = 'center';
         this.ctx.textBaseline = 'middle';
         this.ctx.shadowBlur = 20;
         this.ctx.shadowColor = '#2ecc71';
-        this.ctx.fillText(`¡NIVEL ${level} COMPLETADO!`, this.width / 2, this.height / 2 - 50);
-
-        // Character rescued celebration
-        if (characterRescued) {
-            this.ctx.shadowBlur = 15;
-            this.ctx.shadowColor = '#ff6b9d';
-            this.ctx.font = 'bold 24px "Segoe UI", sans-serif';
-            this.ctx.fillStyle = '#ff6b9d';
-            this.ctx.fillText(`¡${characterName.toUpperCase()} RESCATADO${characterName === 'Julieta' ? 'A' : ''}!`, this.width / 2, this.height / 2);
-        }
+        this.ctx.fillText(`¡NIVEL ${level} COMPLETADO!`, this.width / 2, this.height / 2);
 
         // Continue instruction
         this.ctx.shadowBlur = 0;

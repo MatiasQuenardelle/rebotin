@@ -464,11 +464,15 @@ export class Game {
                 // Penalty for catching a monster
                 this.score = Math.max(0, this.score - 100);
                 this.lives = Math.max(0, this.lives - 1);
-                if (this.lives <= 0) {
+                // Keep monster briefly to show explosion, then remove
+                const hasExplosion = monster.explosionParticles.length > 0;
+
+                // Only transition to game over after explosion finishes
+                if (this.lives <= 0 && !hasExplosion) {
                     this.state = this.states.GAME_OVER;
                 }
-                // Keep monster briefly to show explosion, then remove
-                return monster.explosionParticles.length > 0;
+
+                return hasExplosion;
             }
 
             // Remove if escaped
