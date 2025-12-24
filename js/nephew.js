@@ -42,6 +42,9 @@ export class Nephew {
         this.celebrationTimer = 0;
         this.celebrationDuration = 4000; // 4 seconds of celebration for better visibility
         this.celebrationComplete = false;
+
+        // Celebration type (will be randomly selected)
+        this.celebrationType = null;
     }
 
     free() {
@@ -74,50 +77,70 @@ export class Nephew {
     }
 
     createCelebrationEffects() {
+        // Randomly select one of 6 celebration types
+        const celebrationTypes = [
+            'hearts', 'fireworks', 'confetti', 'stars', 'rainbow', 'sparkle'
+        ];
+        this.celebrationType = celebrationTypes[Math.floor(Math.random() * celebrationTypes.length)];
+        console.log(`[NEPHEW] Selected celebration type: ${this.celebrationType}`);
+
         const centerX = this.x + this.width / 2;
         const centerY = this.y;
 
-        // Create lots of hearts around character
-        for (let i = 0; i < 15; i++) {
+        // Execute the selected celebration
+        switch (this.celebrationType) {
+            case 'hearts':
+                this.createHeartsExplosion(centerX, centerY);
+                break;
+            case 'fireworks':
+                this.createFireworksShow(centerX, centerY);
+                break;
+            case 'confetti':
+                this.createConfettiParty(centerX, centerY);
+                break;
+            case 'stars':
+                this.createStarBurst(centerX, centerY);
+                break;
+            case 'rainbow':
+                this.createRainbowSpiral(centerX, centerY);
+                break;
+            case 'sparkle':
+                this.createSparkleRain(centerX, centerY);
+                break;
+        }
+    }
+
+    // Celebration Type 1: Hearts Explosion
+    createHeartsExplosion(centerX, centerY) {
+        // Big hearts floating up all around
+        for (let i = 0; i < 12; i++) {
             this.hearts.push({
-                x: centerX + (Math.random() - 0.5) * 50,
-                y: centerY + (Math.random() - 0.5) * 30,
-                vy: -Math.random() * 2 - 1,
-                vx: (Math.random() - 0.5) * 2,
+                x: centerX + (Math.random() - 0.5) * 60,
+                y: centerY + (Math.random() - 0.5) * 40,
+                vy: -Math.random() * 2.5 - 1.5,
+                vx: (Math.random() - 0.5) * 3,
                 life: 1,
-                size: Math.random() * 10 + 8
+                size: Math.random() * 12 + 10
             });
         }
+    }
 
-        // Create multiple fireworks bursts across the screen
-        this.createFireworkBurst(centerX - 80, centerY - 50, '#ff6b6b');
-        this.createFireworkBurst(centerX + 80, centerY - 50, '#ffd93d');
+    // Celebration Type 2: Fireworks Show (lighter than before)
+    createFireworksShow(centerX, centerY) {
+        // Just 3 firework bursts instead of 5
+        this.createFireworkBurst(centerX - 60, centerY - 50, '#ff6b6b');
+        this.createFireworkBurst(centerX + 60, centerY - 50, '#ffd93d');
         this.createFireworkBurst(centerX, centerY - 90, '#6bcb77');
-        this.createFireworkBurst(centerX - 40, centerY - 120, '#4ecdc4');
-        this.createFireworkBurst(centerX + 40, centerY - 120, '#ff6b9d');
+    }
 
-        // Create star burst around character
-        for (let i = 0; i < 20; i++) {
-            const angle = (i / 20) * Math.PI * 2;
-            this.stars.push({
-                x: centerX,
-                y: centerY,
-                vx: Math.cos(angle) * 4,
-                vy: Math.sin(angle) * 4,
-                life: 1,
-                size: Math.random() * 5 + 4,
-                color: ['#ffd700', '#ff6b9d', '#00ffff', '#ff69b4', '#7fff00'][Math.floor(Math.random() * 5)],
-                rotation: Math.random() * Math.PI * 2,
-                rotationSpeed: (Math.random() - 0.5) * 0.3
-            });
-        }
-
-        // Create heavy confetti shower
-        for (let i = 0; i < 40; i++) {
+    // Celebration Type 3: Confetti Party
+    createConfettiParty(centerX, centerY) {
+        // Confetti raining down
+        for (let i = 0; i < 30; i++) {
             this.confetti.push({
                 x: centerX + (Math.random() - 0.5) * 150,
-                y: centerY - 60 - Math.random() * 50,
-                vx: (Math.random() - 0.5) * 4,
+                y: centerY - 80 - Math.random() * 40,
+                vx: (Math.random() - 0.5) * 3,
                 vy: Math.random() * 2 + 1,
                 life: 1,
                 size: Math.random() * 8 + 5,
@@ -129,18 +152,76 @@ export class Nephew {
         }
     }
 
+    // Celebration Type 4: Star Burst
+    createStarBurst(centerX, centerY) {
+        // Stars exploding outward in all directions
+        for (let i = 0; i < 16; i++) {
+            const angle = (i / 16) * Math.PI * 2;
+            this.stars.push({
+                x: centerX,
+                y: centerY,
+                vx: Math.cos(angle) * 5,
+                vy: Math.sin(angle) * 5,
+                life: 1,
+                size: Math.random() * 6 + 5,
+                color: ['#ffd700', '#ff6b9d', '#00ffff', '#ff69b4', '#7fff00'][Math.floor(Math.random() * 5)],
+                rotation: Math.random() * Math.PI * 2,
+                rotationSpeed: (Math.random() - 0.5) * 0.4
+            });
+        }
+    }
+
+    // Celebration Type 5: Rainbow Spiral
+    createRainbowSpiral(centerX, centerY) {
+        // Colorful spiral of stars and hearts
+        const colors = ['#ff0000', '#ff7f00', '#ffff00', '#00ff00', '#0000ff', '#9400d3'];
+        for (let i = 0; i < 18; i++) {
+            const angle = (i / 18) * Math.PI * 4; // Double spiral
+            const radius = i * 3;
+            this.stars.push({
+                x: centerX + Math.cos(angle) * radius,
+                y: centerY + Math.sin(angle) * radius,
+                vx: Math.cos(angle) * 3,
+                vy: Math.sin(angle) * 3,
+                life: 1,
+                size: 6,
+                color: colors[i % colors.length],
+                rotation: 0,
+                rotationSpeed: 0.3
+            });
+        }
+    }
+
+    // Celebration Type 6: Sparkle Rain
+    createSparkleRain(centerX, centerY) {
+        // Gentle rain of sparkling stars
+        for (let i = 0; i < 25; i++) {
+            this.stars.push({
+                x: centerX + (Math.random() - 0.5) * 120,
+                y: centerY - 80 - Math.random() * 60,
+                vx: (Math.random() - 0.5) * 2,
+                vy: Math.random() * 1.5 + 0.5,
+                life: 1,
+                size: Math.random() * 5 + 3,
+                color: ['#ffd700', '#ffffff', '#ffff00', '#ffe135'][Math.floor(Math.random() * 4)],
+                rotation: Math.random() * Math.PI * 2,
+                rotationSpeed: (Math.random() - 0.5) * 0.3
+            });
+        }
+    }
+
     createFireworkBurst(x, y, baseColor) {
-        const particleCount = 25; // More particles for bigger bursts
+        const particleCount = 15; // Reduced from 25 for better performance
         for (let i = 0; i < particleCount; i++) {
             const angle = (i / particleCount) * Math.PI * 2;
-            const speed = 3 + Math.random() * 3; // Faster spread
+            const speed = 3 + Math.random() * 2;
             this.fireworks.push({
                 x: x,
                 y: y,
                 vx: Math.cos(angle) * speed,
                 vy: Math.sin(angle) * speed,
                 life: 1,
-                size: Math.random() * 4 + 3, // Bigger particles
+                size: Math.random() * 3 + 2,
                 color: baseColor,
                 trail: []
             });
@@ -151,56 +232,103 @@ export class Nephew {
         const centerX = this.x + this.width / 2;
         const centerY = this.y;
 
-        // Random firework bursts - VERY frequent for impressive display
-        if (Math.random() < 0.45) {
-            const offsetX = (Math.random() - 0.5) * 250;
-            const offsetY = -50 - Math.random() * 120;
-            const colors = ['#ff6b6b', '#ffd93d', '#6bcb77', '#4ecdc4', '#ff6b9d', '#a855f7', '#ff4500', '#00ff00'];
-            this.createFireworkBurst(centerX + offsetX, centerY + offsetY, colors[Math.floor(Math.random() * colors.length)]);
-        }
+        // Spawn effects based on the celebration type, less frequently
+        switch (this.celebrationType) {
+            case 'hearts':
+                // Occasional hearts
+                if (Math.random() < 0.15) {
+                    this.hearts.push({
+                        x: centerX + (Math.random() - 0.5) * 60,
+                        y: centerY,
+                        vy: -Math.random() * 2 - 1,
+                        vx: (Math.random() - 0.5) * 2,
+                        life: 1,
+                        size: Math.random() * 12 + 10
+                    });
+                }
+                break;
 
-        // More confetti - raining down constantly
-        if (Math.random() < 0.7) {
-            this.confetti.push({
-                x: centerX + (Math.random() - 0.5) * 200,
-                y: centerY - 100,
-                vx: (Math.random() - 0.5) * 3,
-                vy: Math.random() * 1.5 + 0.5,
-                life: 1,
-                size: Math.random() * 8 + 5,
-                color: ['#ff6b6b', '#ffd93d', '#6bcb77', '#4ecdc4', '#ff6b9d', '#a855f7'][Math.floor(Math.random() * 6)],
-                rotation: Math.random() * Math.PI * 2,
-                rotationSpeed: (Math.random() - 0.5) * 0.2,
-                wobble: Math.random() * Math.PI * 2
-            });
-        }
+            case 'fireworks':
+                // Occasional small firework burst
+                if (Math.random() < 0.1) {
+                    const offsetX = (Math.random() - 0.5) * 150;
+                    const offsetY = -50 - Math.random() * 80;
+                    const colors = ['#ff6b6b', '#ffd93d', '#6bcb77', '#4ecdc4', '#ff6b9d'];
+                    this.createFireworkBurst(centerX + offsetX, centerY + offsetY, colors[Math.floor(Math.random() * colors.length)]);
+                }
+                break;
 
-        // More hearts floating up
-        if (Math.random() < 0.5) {
-            this.hearts.push({
-                x: centerX + (Math.random() - 0.5) * 80,
-                y: centerY,
-                vy: -Math.random() * 2.5 - 1,
-                vx: (Math.random() - 0.5) * 2,
-                life: 1,
-                size: Math.random() * 10 + 8
-            });
-        }
+            case 'confetti':
+                // Light confetti drops
+                if (Math.random() < 0.25) {
+                    this.confetti.push({
+                        x: centerX + (Math.random() - 0.5) * 150,
+                        y: centerY - 100,
+                        vx: (Math.random() - 0.5) * 3,
+                        vy: Math.random() * 1.5 + 0.5,
+                        life: 1,
+                        size: Math.random() * 8 + 5,
+                        color: ['#ff6b6b', '#ffd93d', '#6bcb77', '#4ecdc4', '#ff6b9d', '#a855f7'][Math.floor(Math.random() * 6)],
+                        rotation: Math.random() * Math.PI * 2,
+                        rotationSpeed: (Math.random() - 0.5) * 0.2,
+                        wobble: Math.random() * Math.PI * 2
+                    });
+                }
+                break;
 
-        // Add stars burst more frequently
-        if (Math.random() < 0.3) {
-            const angle = Math.random() * Math.PI * 2;
-            this.stars.push({
-                x: centerX,
-                y: centerY,
-                vx: Math.cos(angle) * 4,
-                vy: Math.sin(angle) * 4,
-                life: 1,
-                size: Math.random() * 5 + 4,
-                color: ['#ffd700', '#ff6b9d', '#00ffff', '#ff69b4', '#7fff00'][Math.floor(Math.random() * 5)],
-                rotation: Math.random() * Math.PI * 2,
-                rotationSpeed: (Math.random() - 0.5) * 0.4
-            });
+            case 'stars':
+                // Occasional star
+                if (Math.random() < 0.12) {
+                    const angle = Math.random() * Math.PI * 2;
+                    this.stars.push({
+                        x: centerX,
+                        y: centerY,
+                        vx: Math.cos(angle) * 5,
+                        vy: Math.sin(angle) * 5,
+                        life: 1,
+                        size: Math.random() * 6 + 5,
+                        color: ['#ffd700', '#ff6b9d', '#00ffff', '#ff69b4', '#7fff00'][Math.floor(Math.random() * 5)],
+                        rotation: Math.random() * Math.PI * 2,
+                        rotationSpeed: (Math.random() - 0.5) * 0.4
+                    });
+                }
+                break;
+
+            case 'rainbow':
+                // Add few rainbow stars
+                if (Math.random() < 0.1) {
+                    const colors = ['#ff0000', '#ff7f00', '#ffff00', '#00ff00', '#0000ff', '#9400d3'];
+                    const angle = Math.random() * Math.PI * 2;
+                    this.stars.push({
+                        x: centerX,
+                        y: centerY,
+                        vx: Math.cos(angle) * 3,
+                        vy: Math.sin(angle) * 3,
+                        life: 1,
+                        size: 6,
+                        color: colors[Math.floor(Math.random() * colors.length)],
+                        rotation: 0,
+                        rotationSpeed: 0.3
+                    });
+                }
+                break;
+
+            case 'sparkle':
+                // Light sparkle rain
+                if (Math.random() < 0.2) {
+                    this.stars.push({
+                        x: centerX + (Math.random() - 0.5) * 100,
+                        y: centerY - 80,
+                        vx: (Math.random() - 0.5) * 2,
+                        vy: Math.random() * 1.5 + 0.5,
+                        life: 1,
+                        size: Math.random() * 5 + 3,
+                        color: ['#ffd700', '#ffffff', '#ffff00', '#ffe135'][Math.floor(Math.random() * 4)],
+                        rotation: Math.random() * Math.PI * 2,
+                        rotationSpeed: (Math.random() - 0.5) * 0.3
+                    });
+                }
+                break;
         }
     }
 

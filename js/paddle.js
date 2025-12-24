@@ -186,5 +186,7 @@ export class Paddle {
         this.sizeModifier = 1;
         this.sizeTimer = 0;
         this.width = this.baseWidth;
+        this.laserMode = false;
+        this.laserPulse = 0;
     }
 }

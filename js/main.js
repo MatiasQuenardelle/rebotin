@@ -78,25 +78,47 @@ speedButtons.forEach(btn => {
 // Fullscreen functionality
 let isFullscreen = false;
 
-function toggleFullscreen() {
+async function toggleFullscreen() {
     if (!isFullscreen) {
         // Enter fullscreen
         const elem = gameContainer;
-        if (elem.requestFullscreen) {
-            elem.requestFullscreen();
-        } else if (elem.webkitRequestFullscreen) {
-            elem.webkitRequestFullscreen();
-        } else if (elem.msRequestFullscreen) {
-            elem.msRequestFullscreen();
+        try {
+            if (elem.requestFullscreen) {
+                await elem.requestFullscreen({ navigationUI: "hide" });
+            } else if (elem.webkitRequestFullscreen) {
+                await elem.webkitRequestFullscreen();
+            } else if (elem.msRequestFullscreen) {
+                await elem.msRequestFullscreen();
+            }
+            // Lock screen orientation to landscape on mobile for better experience
+            if (screen.orientation && screen.orientation.lock) {
+                try {
+                    await screen.orientation.lock('landscape').catch(() => {
+                        // Orientation lock not supported or failed, continue anyway
+                    });
+                } catch (e) {
+                    // Ignore orientation lock errors
+                }
+            }
+        } catch (err) {
+            console.warn('Fullscreen request failed:', err);
         }
     } else {
         // Exit fullscreen
-        if (document.exitFullscreen) {
-            document.exitFullscreen();
-        } else if (document.webkitExitFullscreen) {
-            document.webkitExitFullscreen();
-        } else if (document.msExitFullscreen) {
-            document.msExitFullscreen();
+        try {
+            if (document.exitFullscreen) {
+                await document.exitFullscreen();
+            } else if (document.webkitExitFullscreen) {
+                await document.webkitExitFullscreen();
+            } else if (document.msExitFullscreen) {
+                await document.msExitFullscreen();
+            }
+            // Unlock orientation when exiting fullscreen
+            if (screen.orientation && screen.orientation.unlock) {
+                screen.orientation.unlock();
+            }
+        } catch (err) {
+            console.warn('Exit fullscreen failed:', err);
         }
     }
 }

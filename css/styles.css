@@ -237,6 +237,48 @@ body {
     }
 }
 
+/* Landscape mode optimizations - compact controls */
+@media (max-width: 850px) and (orientation: landscape) {
+    .game-container {
+        padding: 5px;
+    }
+
+    .speed-controls {
+        position: absolute;
+        top: 5px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 10000;
+        background: rgba(10, 10, 26, 0.85);
+        padding: 4px 10px;
+        border-radius: 15px;
+        border: 1px solid rgba(0, 212, 255, 0.3);
+        gap: 4px;
+        margin-bottom: 0;
+    }
+
+    .speed-controls label {
+        font-size: 11px;
+    }
+
+    .speed-btn, .gyro-btn, .fullscreen-btn {
+        padding: 4px 8px;
+        font-size: 10px;
+    }
+
+    #gameCanvas {
+        width: 100%;
+        height: 100%;
+        max-height: 100vh;
+        object-fit: contain;
+    }
+
+    /* Remove scanline effect in landscape to save space */
+    .game-container::before {
+        display: none;
+    }
+}
+
 /* Landscape mobile fullscreen */
 @media (max-height: 500px) and (orientation: landscape) {
     .game-container.fullscreen .speed-controls {
