@@ -4,9 +4,7 @@
     box-sizing: border-box;
 }
 
-/* Basedd styles */
-
-/* Basedd styles *//* Basedd styles */
+/* Base styles */
 
 /* Ensure html and body take full height for PWA/fullscreen */
 html, body {
@@ -241,196 +239,45 @@ body {
     }
 }
 
-/* Side control panel styles */
-.side-controls {
-    display: none; /* Hidden by default, shown in landscape */
-    position: absolute;
-    right: 10px;
-    top: 50%;
-    transform: translateY(-50%);
-    z-index: 10000;
-    flex-direction: column;
-    gap: 12px;
-}
-
-.control-btn {
-    width: 70px;
-    height: 70px;
-    border-radius: 12px;
-    border: 2px solid rgba(0, 212, 255, 0.4);
-    background: rgba(10, 10, 26, 0.9);
-    color: #fff;
-    cursor: pointer;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 4px;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
-}
-
-.control-btn .btn-icon {
-    font-size: 28px;
-    line-height: 1;
-}
-
-.control-btn .btn-label {
-    font-size: 9px;
-    font-weight: bold;
-    letter-spacing: 0.5px;
-}
-
-.control-btn:hover:not(.disabled) {
-    transform: scale(1.1);
-    border-color: rgba(0, 212, 255, 0.8);
-    box-shadow: 0 0 20px rgba(0, 212, 255, 0.5);
-}
-
-.control-btn.active {
-    background: rgba(0, 212, 255, 0.3);
-    border-color: #00d4ff;
-    box-shadow: 0 0 25px rgba(0, 212, 255, 0.7);
-}
-
-.control-btn.disabled {
-    opacity: 0.3;
-    cursor: not-allowed;
-}
-
-.control-btn.hidden {
-    display: none;
-}
-
-/* Specific button colors */
-.laser-btn:not(.disabled) {
-    border-color: rgba(255, 68, 68, 0.4);
-}
-.laser-btn.active {
-    background: rgba(255, 68, 68, 0.3);
-    border-color: #ff4444;
-    box-shadow: 0 0 25px rgba(255, 68, 68, 0.7);
-}
-
-.expand-btn:not(.disabled) {
-    border-color: rgba(46, 204, 113, 0.4);
-}
-.expand-btn.active {
-    background: rgba(46, 204, 113, 0.3);
-    border-color: #2ecc71;
-    box-shadow: 0 0 25px rgba(46, 204, 113, 0.7);
-}
-
-.shrink-btn:not(.disabled) {
-    border-color: rgba(231, 76, 60, 0.4);
-}
-.shrink-btn.active {
-    background: rgba(231, 76, 60, 0.3);
-    border-color: #e74c3c;
-    box-shadow: 0 0 25px rgba(231, 76, 60, 0.7);
-}
-
-.inverse-btn:not(.disabled) {
-    border-color: rgba(155, 89, 182, 0.4);
-}
-.inverse-btn.active {
-    background: rgba(155, 89, 182, 0.3);
-    border-color: #9b59b6;
-    box-shadow: 0 0 25px rgba(155, 89, 182, 0.7);
-}
-
-/* Horizontal weapon wheel */
-.weapon-wheel {
-    display: none; /* Hidden by default, shown in landscape */
-    position: absolute;
-    bottom: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 10000;
-    flex-direction: row;
-    gap: 15px;
-    background: rgba(10, 10, 26, 0.9);
-    padding: 15px 25px;
-    border-radius: 50px;
-    border: 2px solid rgba(0, 212, 255, 0.4);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
-}
-
-.wheel-item {
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    border: 3px solid rgba(0, 212, 255, 0.3);
-    background: rgba(0, 0, 0, 0.5);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    position: relative;
-}
-
-.wheel-item .wheel-icon {
-    font-size: 32px;
-}
-
-.wheel-item:hover {
-    transform: scale(1.15);
-    border-color: rgba(0, 212, 255, 0.8);
-    box-shadow: 0 0 20px rgba(0, 212, 255, 0.5);
-}
-
-.wheel-item.active {
-    border-color: #00d4ff;
-    background: rgba(0, 212, 255, 0.2);
-    box-shadow: 0 0 30px rgba(0, 212, 255, 0.8);
-}
-
-.wheel-item.disabled {
-    opacity: 0.3;
-    cursor: not-allowed;
-}
-
 /* Landscape mode optimizations - compact controls */
 @media (max-width: 850px) and (orientation: landscape) {
     .game-container {
-        padding: 0;
-        width: 100vw;
-        height: 100vh;
-        border-radius: 0;
+        padding: 5px;
     }
 
     .speed-controls {
-        display: none !important; /* Hide top controls in landscape */
+        position: absolute;
+        top: 5px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 10000;
+        background: rgba(10, 10, 26, 0.85);
+        padding: 4px 10px;
+        border-radius: 15px;
+        border: 1px solid rgba(0, 212, 255, 0.3);
+        gap: 4px;
+        margin-bottom: 0;
     }
 
-    /* Show side controls and weapon wheel in landscape */
-    .side-controls {
-        display: flex;
+    .speed-controls label {
+        font-size: 11px;
     }
 
-    .weapon-wheel {
-        display: flex;
+    .speed-btn, .gyro-btn, .fullscreen-btn {
+        padding: 4px 8px;
+        font-size: 10px;
     }
 
     #gameCanvas {
-        width: 100% !important;
-        height: 100% !important;
+        width: 100%;
+        height: 100%;
         max-height: 100vh;
-        object-fit: cover !important; /* Fill the screen */
-        border-radius: 0;
+        object-fit: contain;
     }
 
     /* Remove scanline effect in landscape to save space */
     .game-container::before {
         display: none;
-    }
-
-    /* Remove dark container background */
-    .game-container {
-        background: transparent !important;
-        box-shadow: none !important;
-        border: none !important;
     }
 }
 
