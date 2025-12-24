@@ -30,6 +30,12 @@ if (nephewMode) {
 // Side controls and weapon wheel elements
 const sideControls = document.getElementById('sideControls');
 const tiltBtn = document.getElementById('tiltBtn');
+const laserBtn = document.getElementById('laserBtn');
+const expandBtn = document.getElementById('expandBtn');
+const shrinkBtn = document.getElementById('shrinkBtn');
+const inverseBtn = document.getElementById('inverseBtn');
+const destroyerBtn = document.getElementById('destroyerBtn');
+const stickyBtn = document.getElementById('stickyBtn');
 const weaponWheel = document.getElementById('weaponWheel');
 const wheelItems = document.querySelectorAll('.wheel-item');
 
@@ -154,6 +160,55 @@ function updateWeaponWheel() {
             }
         }
     });
+
+    // Update side control buttons
+    if (game.laserActive) {
+        laserBtn.classList.remove('disabled');
+        laserBtn.classList.add('active');
+    } else {
+        laserBtn.classList.add('disabled');
+        laserBtn.classList.remove('active');
+    }
+
+    if (game.paddle.sizeModifier > 1 && game.paddle.sizeTimer > 0) {
+        expandBtn.classList.remove('disabled');
+        expandBtn.classList.add('active');
+    } else {
+        expandBtn.classList.add('disabled');
+        expandBtn.classList.remove('active');
+    }
+
+    if (game.paddle.sizeModifier < 1 && game.paddle.sizeTimer > 0) {
+        shrinkBtn.classList.remove('disabled');
+        shrinkBtn.classList.add('active');
+    } else {
+        shrinkBtn.classList.add('disabled');
+        shrinkBtn.classList.remove('active');
+    }
+
+    if (game.paddle.inverseControls && game.paddle.inverseTimer > 0) {
+        inverseBtn.classList.remove('disabled');
+        inverseBtn.classList.add('active');
+    } else {
+        inverseBtn.classList.add('disabled');
+        inverseBtn.classList.remove('active');
+    }
+
+    if (game.destroyerActive) {
+        destroyerBtn.classList.remove('disabled');
+        destroyerBtn.classList.add('active');
+    } else {
+        destroyerBtn.classList.add('disabled');
+        destroyerBtn.classList.remove('active');
+    }
+
+    if (game.stickyActive) {
+        stickyBtn.classList.remove('disabled');
+        stickyBtn.classList.add('active');
+    } else {
+        stickyBtn.classList.add('disabled');
+        stickyBtn.classList.remove('active');
+    }
 }
 
 // Speed button click handlers

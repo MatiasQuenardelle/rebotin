@@ -14,6 +14,13 @@ export class Ball {
         this.canvasWidth = canvasWidth;
         this.canvasHeight = canvasHeight;
         this.speedMultiplier = 1;
+
+        // Destroyer mode (ball destroys all blocks in path)
+        this.destroyerMode = false;
+
+        // Sticky mode (ball sticks to paddle)
+        this.stickyMode = false;
+        this.isStuck = false;
     }
 
     setSpeedMultiplier(multiplier) {
@@ -56,6 +63,15 @@ export class Ball {
     }
 
     bounceOffPaddle(paddle) {
+        // If sticky mode is active, stick to paddle instead of bouncing
+        if (this.stickyMode && !this.isStuck) {
+            this.isStuck = true;
+            this.launched = false;
+            this.dx = 0;
+            this.dy = 0;
+            return;
+        }
+
         const hitPoint = (this.x - paddle.x) / paddle.width;
         const angle = (hitPoint - 0.5) * 140 * (Math.PI / 180); // -70 to +70 degrees from center
 
@@ -79,6 +95,34 @@ export class Ball {
 
     increaseSpeed(amount = 0.5) {
         this.speed = Math.min(this.speed + amount, 12);
+    }
+
+    enableDestroyerMode() {
+        this.destroyerMode = true;
+        this.color = '#ff9500'; // Orange color for destroyer
+    }
+
+    disableDestroyerMode() {
+        this.destroyerMode = false;
+        this.color = '#ffffff'; // Back to white
+    }
+
+    enableStickyMode() {
+        this.stickyMode = true;
+        this.color = '#00a8ff'; // Blue color for sticky
+    }
+
+    disableStickyMode() {
+        this.stickyMode = false;
+        this.isStuck = false;
+        this.color = '#ffffff'; // Back to white
+    }
+
+    launchFromSticky() {
+        if (this.isStuck) {
+            this.isStuck = false;
+            this.launch();
+        }
     }
 
     render(ctx) {
@@ -131,7 +175,40 @@ export class Ball {
 
         // Draw main ball with glow (make it bigger and more visible)
         ctx.shadowBlur = 20;
-        ctx.shadowColor = 'rgba(255, 255, 255, 0.9)';
+        ctx.shadowColor = this.destroyerMode ? 'rgba(255, 149, 0, 0.9)' :
+                         this.stickyMode ? 'rgba(0, 168, 255, 0.9)' :
+                         'rgba(255, 255, 255, 0.9)';
+
+        // Destroyer mode: draw explosion rays
+        if (this.destroyerMode && this.launched) {
+            ctx.strokeStyle = '#ff9500';
+            ctx.lineWidth = 2;
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = '#ff9500';
+            for (let i = 0; i < 8; i++) {
+                const angle = (i / 8) * Math.PI * 2 + Date.now() / 200;
+                const x1 = this.x + Math.cos(angle) * this.radius;
+                const y1 = this.y + Math.sin(angle) * this.radius;
+                const x2 = this.x + Math.cos(angle) * (this.radius * 2);
+                const y2 = this.y + Math.sin(angle) * (this.radius * 2);
+                ctx.beginPath();
+                ctx.moveTo(x1, y1);
+                ctx.lineTo(x2, y2);
+                ctx.stroke();
+            }
+        }
+
+        // Sticky mode: draw target rings
+        if (this.stickyMode) {
+            ctx.strokeStyle = '#00a8ff';
+            ctx.lineWidth = 2;
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = '#00a8ff';
+            const pulse = 1 + Math.sin(Date.now() / 200) * 0.2;
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.radius * 2 * pulse, 0, Math.PI * 2);
+            ctx.stroke();
+        }
 
         ctx.beginPath();
         ctx.arc(this.x, this.y, this.radius * 1.2, 0, Math.PI * 2);

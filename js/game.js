@@ -51,6 +51,16 @@ export class Game {
         this.laserCooldown = 0;
         this.laserFireRate = 400; // ms between shots (slower)
 
+        // Destroyer power-up
+        this.destroyerActive = false;
+        this.destroyerTimer = 0;
+        this.destroyerDuration = 8000; // 8 seconds
+
+        // Sticky ball power-up
+        this.stickyActive = false;
+        this.stickyTimer = 0;
+        this.stickyDuration = 10000; // 10 seconds
+
         this.init();
     }
 
@@ -74,11 +84,24 @@ export class Game {
         this.nephew = this.prisonBrick ? this.prisonBrick.getNephew() : null;
         this.nephewFreed = false;
         this.nephewRescued = false;
+
+        // Monster tracking
+        this.monsterBricks = levelData.monsterBricks || [];
+        this.monsters = [];
+        this.monstersFreed = 0;
         // Reset power-ups
         this.powerUps = [];
         this.lasers = [];
         this.laserActive = false;
         this.laserTimer = 0;
+        this.destroyerActive = false;
+        this.destroyerTimer = 0;
+        this.stickyActive = false;
+        this.stickyTimer = 0;
+        if (this.ball) {
+            this.ball.disableDestroyerMode();
+            this.ball.disableStickyMode();
+        }
     }
 
     reset() {
@@ -265,6 +288,28 @@ export class Game {
             }
         }
 
+        // Update destroyer timer
+        if (this.destroyerActive) {
+            this.destroyerTimer -= deltaTime;
+            if (this.destroyerTimer <= 0) {
+                this.destroyerActive = false;
+                this.ball.disableDestroyerMode();
+            }
+        }
+
+        // Update sticky timer
+        if (this.stickyActive) {
+            this.stickyTimer -= deltaTime;
+            // Allow launching from sticky with space/click
+            if (this.ball.isStuck && this.input.isLaunchPressed()) {
+                this.ball.launchFromSticky();
+            }
+            if (this.stickyTimer <= 0) {
+                this.stickyActive = false;
+                this.ball.disableStickyMode();
+            }
+        }
+
         // Update lasers
         this.lasers = this.lasers.filter(laser => {
             laser.update();
@@ -306,22 +351,68 @@ export class Game {
         ballPaddleCollision(this.ball, this.paddle);
 
         // Check brick collisions
-        const hitBrick = ballBrickCollision(this.ball, this.bricks);
-        if (hitBrick) {
-            // Indestructible bricks don't get destroyed
-            if (!hitBrick.indestructible) {
-                this.score += hitBrick.hit();
+        if (this.destroyerActive) {
+            // Destroyer mode: destroy ALL bricks in path without bouncing
+            const hitBricks = this.bricks.filter(brick => {
+                if (!brick.alive) return false;
+                const dist = Math.sqrt(
+                    Math.pow(this.ball.x - (brick.x + brick.width / 2), 2) +
+                    Math.pow(this.ball.y - (brick.y + brick.height / 2), 2)
+                );
+                return dist < this.ball.radius + 20; // Extended collision range
+            });
 
-                // Chance to spawn power-up
-                this.trySpawnPowerUp(hitBrick);
+            for (const brick of hitBricks) {
+                if (!brick.indestructible) {
+                    this.score += brick.hit();
+                    this.trySpawnPowerUp(brick);
 
-                // Check if we freed the nephew
-                if (hitBrick === this.prisonBrick && !this.nephewFreed) {
-                    this.nephewFreed = true;
-                    this.score += 50;
-                    // Enter rescue phase - ball disappears
-                    this.state = this.states.RESCUE_PHASE;
-                    return;
+                    // Check if we freed the nephew
+                    if (brick === this.prisonBrick && !this.nephewFreed) {
+                        this.nephewFreed = true;
+                        this.score += 50;
+                        this.state = this.states.RESCUE_PHASE;
+                        return;
+                    }
+
+                    // Check if we freed a monster
+                    if (this.monsterBricks.includes(brick)) {
+                        const monster = brick.getMonster();
+                        if (monster && monster.state === 'trapped') {
+                            this.monsters.push(monster);
+                            this.monstersFreed++;
+                        }
+                    }
+                }
+            }
+        } else {
+            // Normal mode: single brick collision with bounce
+            const hitBrick = ballBrickCollision(this.ball, this.bricks);
+            if (hitBrick) {
+                // Indestructible bricks don't get destroyed
+                if (!hitBrick.indestructible) {
+                    this.score += hitBrick.hit();
+
+                    // Chance to spawn power-up
+                    this.trySpawnPowerUp(hitBrick);
+
+                    // Check if we freed the nephew
+                    if (hitBrick === this.prisonBrick && !this.nephewFreed) {
+                        this.nephewFreed = true;
+                        this.score += 50;
+                        // Enter rescue phase - ball disappears
+                        this.state = this.states.RESCUE_PHASE;
+                        return;
+                    }
+
+                    // Check if we freed a monster
+                    if (this.monsterBricks.includes(hitBrick)) {
+                        const monster = hitBrick.getMonster();
+                        if (monster && monster.state === 'trapped') {
+                            this.monsters.push(monster);
+                            this.monstersFreed++;
+                        }
+                    }
                 }
             }
         }
@@ -344,6 +435,33 @@ export class Game {
         if (this.prisonBrick && this.prisonBrick.alive) {
             this.prisonBrick.update();
         }
+
+        // Update monster bricks animation
+        for (const monsterBrick of this.monsterBricks) {
+            if (monsterBrick.alive) {
+                monsterBrick.update();
+            }
+        }
+
+        // Update monsters (falling)
+        this.monsters = this.monsters.filter(monster => {
+            monster.update(this.paddle, this.canvas.height, deltaTime);
+
+            // Remove if caught
+            if (monster.state === 'caught') {
+                // Penalty for catching a monster
+                this.score = Math.max(0, this.score - 100);
+                this.lives = Math.max(0, this.lives - 1);
+                if (this.lives <= 0) {
+                    this.state = this.states.GAME_OVER;
+                }
+                // Keep monster briefly to show explosion, then remove
+                return monster.explosionParticles.length > 0;
+            }
+
+            // Remove if escaped
+            return monster.state !== 'escaped';
+        });
 
         // Update nephew if freed (shouldn't happen in PLAYING state anymore)
         if (this.nephew && this.nephewFreed) {
@@ -424,6 +542,18 @@ export class Game {
             case 'shrink':
                 this.paddle.applyShrink(10000); // 10 seconds
                 break;
+
+            case 'destroyer':
+                this.destroyerActive = true;
+                this.destroyerTimer = this.destroyerDuration;
+                this.ball.enableDestroyerMode();
+                break;
+
+            case 'sticky':
+                this.stickyActive = true;
+                this.stickyTimer = this.stickyDuration;
+                this.ball.enableStickyMode();
+                break;
         }
     }
 
@@ -483,8 +613,14 @@ export class Game {
         }
 
         // Draw falling nephew (after bricks, before paddle)
-        if (this.nephew && this.nephewFreed && this.nephew.state !== 'trapped') {
+        // Skip rendering here during LEVEL_CELEBRATION to avoid duplication
+        if (this.nephew && this.nephewFreed && this.nephew.state !== 'trapped' && this.state !== this.states.LEVEL_CELEBRATION) {
             this.nephew.render(this.ctx);
+        }
+
+        // Draw falling monsters
+        for (const monster of this.monsters) {
+            monster.render(this.ctx);
         }
 
         // Draw paddle
@@ -495,8 +631,9 @@ export class Game {
             this.ball.render(this.ctx);
         }
 
-        // Draw rescued nephew on paddle (during play or celebration)
-        if (this.nephew && (this.nephewRescued || this.state === this.states.LEVEL_CELEBRATION)) {
+        // Draw rescued nephew on paddle (during play)
+        // Skip during LEVEL_CELEBRATION to avoid duplication (handled in overlay section)
+        if (this.nephew && this.nephewRescued && this.state !== this.states.LEVEL_CELEBRATION) {
             this.nephew.render(this.ctx);
         }
 
@@ -520,6 +657,12 @@ export class Game {
         if (this.paddle.sizeTimer > 0) {
             const type = this.paddle.sizeModifier > 1 ? 'expand' : 'shrink';
             activeTimers.push({ type, percentage: this.paddle.sizeTimer / 10000 });
+        }
+        if (this.destroyerActive) {
+            activeTimers.push({ type: 'destroyer', percentage: this.destroyerTimer / this.destroyerDuration });
+        }
+        if (this.stickyActive) {
+            activeTimers.push({ type: 'sticky', percentage: this.stickyTimer / this.stickyDuration });
         }
         if (activeTimers.length > 0) {
             this.renderer.drawPowerUpTimers(activeTimers);

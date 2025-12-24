@@ -1,5 +1,6 @@
 import { Brick, BRICK_COLORS } from './brick.js';
 import { PrisonBrick } from './prisonBrick.js';
+import { MonsterBrick } from './monsterBrick.js';
 
 const LEVEL_PATTERNS = [
     // Level 1 - Easy intro with nephew at bottom
@@ -98,6 +99,7 @@ export function createLevel(levelNumber, canvasWidth, characterName = 'Felipe') 
     const pattern = LEVEL_PATTERNS[(levelNumber - 1) % LEVEL_PATTERNS.length];
     const bricks = [];
     let prisonBrick = null;
+    const monsterBricks = [];
 
     const padding = 30;
     const brickGap = 4;
@@ -130,9 +132,27 @@ export function createLevel(levelNumber, canvasWidth, characterName = 'Felipe') 
 
     // Randomly select one breakable position for the prison brick
     let prisonPosition = null;
+    const monsterPositions = [];
+
     if (breakableBrickPositions.length > 0) {
         const randomIndex = Math.floor(Math.random() * breakableBrickPositions.length);
         prisonPosition = breakableBrickPositions[randomIndex];
+
+        // Select 1-3 random positions for monster bricks (avoiding prison brick position)
+        const numMonsters = Math.min(
+            1 + Math.floor(Math.random() * 3), // 1-3 monsters
+            breakableBrickPositions.length - 1 // Leave room for prison brick
+        );
+
+        const availablePositions = breakableBrickPositions.filter(
+            pos => pos !== prisonPosition
+        );
+
+        for (let i = 0; i < numMonsters && availablePositions.length > 0; i++) {
+            const randIdx = Math.floor(Math.random() * availablePositions.length);
+            monsterPositions.push(availablePositions[randIdx]);
+            availablePositions.splice(randIdx, 1);
+        }
     }
 
     // Second pass: create the actual bricks
@@ -145,11 +165,17 @@ export function createLevel(levelNumber, canvasWidth, characterName = 'Felipe') 
 
             // Check if this position was selected for the prison brick
             const isPrisonPosition = prisonPosition && prisonPosition.row === row && prisonPosition.col === col;
+            const isMonsterPosition = monsterPositions.some(pos => pos.row === row && pos.col === col);
 
             if (isPrisonPosition && !prisonBrick) {
                 // Create prison brick at this random position
                 prisonBrick = new PrisonBrick(x, y, brickWidth, brickHeight, characterName);
                 bricks.push(prisonBrick);
+            } else if (isMonsterPosition) {
+                // Create monster brick at this position
+                const monsterBrick = new MonsterBrick(x, y, brickWidth, brickHeight);
+                monsterBricks.push(monsterBrick);
+                bricks.push(monsterBrick);
             } else if (char === 'X') {
                 // Indestructible steel brick
                 bricks.push(new Brick(x, y, brickWidth, brickHeight, '#5a5a6a', 0, true));
@@ -161,7 +187,7 @@ export function createLevel(levelNumber, canvasWidth, characterName = 'Felipe') 
         }
     }
 
-    return { bricks, prisonBrick };
+    return { bricks, prisonBrick, monsterBricks };
 }
 
 export function getTotalLevels() {

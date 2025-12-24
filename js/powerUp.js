@@ -6,7 +6,7 @@ export class PowerUp {
         this.height = 24;
 
         // Random type if not specified
-        const types = ['laser', 'inverse', 'expand', 'shrink'];
+        const types = ['laser', 'inverse', 'expand', 'shrink', 'destroyer', 'sticky'];
         this.type = type || types[Math.floor(Math.random() * types.length)];
 
         this.fallSpeed = 2;
@@ -38,6 +38,16 @@ export class PowerUp {
                 color: '#e74c3c',
                 glowColor: '#e74c3c',
                 icon: 'shrink'
+            },
+            destroyer: {
+                color: '#ff9500',
+                glowColor: '#ff9500',
+                icon: 'destroyer'
+            },
+            sticky: {
+                color: '#00a8ff',
+                glowColor: '#00a8ff',
+                icon: 'sticky'
             }
         };
         return configs[this.type] || configs.laser;
@@ -175,6 +185,54 @@ export class PowerUp {
                 ctx.lineTo(5, -3);
                 ctx.moveTo(2, 0);
                 ctx.lineTo(5, 3);
+                ctx.stroke();
+                break;
+
+            case 'destroyer':
+                // Explosion/star burst icon
+                ctx.fillStyle = '#ffffff';
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 2;
+                ctx.lineCap = 'round';
+                // Draw explosion rays
+                for (let i = 0; i < 8; i++) {
+                    const angle = (i / 8) * Math.PI * 2;
+                    const x = Math.cos(angle) * 7;
+                    const y = Math.sin(angle) * 7;
+                    ctx.beginPath();
+                    ctx.moveTo(0, 0);
+                    ctx.lineTo(x, y);
+                    ctx.stroke();
+                }
+                // Center circle
+                ctx.beginPath();
+                ctx.arc(0, 0, 3, 0, Math.PI * 2);
+                ctx.fill();
+                break;
+
+            case 'sticky':
+                // Target/crosshair icon
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 2;
+                ctx.lineCap = 'round';
+                // Outer circle
+                ctx.beginPath();
+                ctx.arc(0, 0, 7, 0, Math.PI * 2);
+                ctx.stroke();
+                // Inner circle
+                ctx.beginPath();
+                ctx.arc(0, 0, 3, 0, Math.PI * 2);
+                ctx.stroke();
+                // Crosshair lines
+                ctx.beginPath();
+                ctx.moveTo(-9, 0);
+                ctx.lineTo(-7, 0);
+                ctx.moveTo(7, 0);
+                ctx.lineTo(9, 0);
+                ctx.moveTo(0, -9);
+                ctx.lineTo(0, -7);
+                ctx.moveTo(0, 7);
+                ctx.lineTo(0, 9);
                 ctx.stroke();
                 break;
         }

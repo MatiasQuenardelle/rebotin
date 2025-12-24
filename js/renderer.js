@@ -373,7 +373,9 @@ export class Renderer {
             laser: { color: '#ff4444', label: 'LASER' },
             inverse: { color: '#9b59b6', label: 'INVERSE' },
             expand: { color: '#2ecc71', label: 'EXPAND' },
-            shrink: { color: '#e74c3c', label: 'SHRINK' }
+            shrink: { color: '#e74c3c', label: 'SHRINK' },
+            destroyer: { color: '#ff9500', label: 'DESTROY' },
+            sticky: { color: '#00a8ff', label: 'STICKY' }
         };
 
         activeTimers.forEach((timer, index) => {
