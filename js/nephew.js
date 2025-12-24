@@ -480,7 +480,7 @@ export class Nephew {
 
             // Gentle swaying motion with wind effect
             this.swayOffset += this.swaySpeed;
-            this.x = this.startX + Math.sin(this.swayOffset) * this.swayAmplitude + windForce * 3;
+            this.x = this.startX + Math.sin(this.swayOffset) * this.swayAmplitude + windForce * 12;
 
             // Fall down slowly
             this.y += this.fallSpeed;

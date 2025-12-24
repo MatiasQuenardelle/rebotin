@@ -75,6 +75,42 @@ export class Monster {
                 isSmoke: true
             });
         }
+
+        // Add parachute fabric pieces (torn parachute effect)
+        const parachuteY = this.y - this.parachuteSize - 5;
+        for (let i = 0; i < 20; i++) {
+            const angle = (i / 20) * Math.PI * 2;
+            const speed = 1 + Math.random() * 2;
+            this.explosionParticles.push({
+                x: centerX + Math.cos(angle) * this.parachuteSize * 0.5,
+                y: parachuteY + Math.sin(angle) * this.parachuteSize * 0.3,
+                vx: Math.cos(angle) * speed,
+                vy: Math.sin(angle) * speed - 1, // Slightly upward
+                life: 1,
+                size: Math.random() * 6 + 4,
+                color: '#4a0e4e', // Dark purple parachute color
+                isParachute: true,
+                rotation: Math.random() * Math.PI * 2,
+                rotationSpeed: (Math.random() - 0.5) * 0.2
+            });
+        }
+
+        // Add parachute strings snapping
+        for (let i = 0; i < 8; i++) {
+            const angle = (i / 8) * Math.PI * 2;
+            this.explosionParticles.push({
+                x: centerX,
+                y: parachuteY,
+                vx: Math.cos(angle) * 3,
+                vy: Math.sin(angle) * 2,
+                life: 1,
+                size: 2,
+                length: 10 + Math.random() * 10,
+                color: '#2a0a2e', // Dark string color
+                isString: true,
+                angle: angle
+            });
+        }
     }
 
     update(paddle, canvasHeight, deltaTime = 16) {
@@ -86,6 +122,12 @@ export class Monster {
             p.y += p.vy;
             p.vy += 0.1; // gravity
             p.vx *= 0.98; // air resistance
+
+            // Update rotation for parachute pieces
+            if (p.rotation !== undefined) {
+                p.rotation += p.rotationSpeed;
+            }
+
             p.life -= 0.02;
             return p.life > 0;
         });
@@ -110,7 +152,7 @@ export class Monster {
 
             // Erratic swaying motion with wind effect
             this.swayOffset += this.swaySpeed;
-            this.x = this.startX + Math.sin(this.swayOffset) * this.swayAmplitude + windForce * 4;
+            this.x = this.startX + Math.sin(this.swayOffset) * this.swayAmplitude + windForce * 15;
 
             // Fall down
             this.y += this.fallSpeed;
@@ -139,15 +181,36 @@ export class Monster {
         // Draw explosion particles
         this.explosionParticles.forEach(p => {
             ctx.globalAlpha = p.life;
-            ctx.fillStyle = p.color;
-            if (p.isSmoke) {
-                ctx.shadowBlur = 8;
-                ctx.shadowColor = p.color;
+
+            if (p.isString) {
+                // Draw parachute string
+                ctx.strokeStyle = p.color;
+                ctx.lineWidth = p.size;
+                ctx.lineCap = 'round';
+                ctx.beginPath();
+                ctx.moveTo(p.x, p.y);
+                ctx.lineTo(p.x + Math.cos(p.angle) * p.length, p.y + Math.sin(p.angle) * p.length);
+                ctx.stroke();
+            } else if (p.isParachute) {
+                // Draw parachute fabric piece (rotated rectangle)
+                ctx.save();
+                ctx.translate(p.x, p.y);
+                ctx.rotate(p.rotation);
+                ctx.fillStyle = p.color;
+                ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
+                ctx.restore();
+            } else {
+                // Regular explosion particle
+                ctx.fillStyle = p.color;
+                if (p.isSmoke) {
+                    ctx.shadowBlur = 8;
+                    ctx.shadowColor = p.color;
+                }
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.shadowBlur = 0;
             }
-            ctx.beginPath();
-            ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.shadowBlur = 0;
         });
 
         ctx.globalAlpha = 1;

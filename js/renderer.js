@@ -162,10 +162,6 @@ export class Renderer {
     drawGameOver(score) {
         this.ctx.save();
 
-        // Darken background
-        this.ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
-        this.ctx.fillRect(0, 0, this.width, this.height);
-
         // Game Over text
         this.ctx.font = 'bold 48px "Segoe UI", sans-serif';
         this.ctx.fillStyle = '#e74c3c';
