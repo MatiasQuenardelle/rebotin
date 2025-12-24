@@ -637,12 +637,17 @@ export class Game {
             this.nephew.render(this.ctx);
         }
 
-        // Draw HUD
-        this.renderer.drawHUD(this.score, this.level, this.lives);
-        this.renderer.drawControls();
+        // Draw HUD - detect landscape mode for mobile
+        const isLandscape = window.innerWidth > window.innerHeight && window.innerWidth <= 950;
+        this.renderer.drawHUD(this.score, this.level, this.lives, isLandscape);
 
-        // Draw rescue status indicator
-        if (this.nephew && (this.state === this.states.PLAYING || this.state === this.states.RESCUE_PHASE)) {
+        // Only show controls hint in portrait/desktop mode
+        if (!isLandscape) {
+            this.renderer.drawControls();
+        }
+
+        // Draw rescue status indicator (skip in landscape - no room)
+        if (!isLandscape && this.nephew && (this.state === this.states.PLAYING || this.state === this.states.RESCUE_PHASE)) {
             this.renderer.drawRescueStatus(this.nephewFreed, this.nephewRescued, this.characterName);
         }
 
@@ -664,7 +669,7 @@ export class Game {
         if (this.stickyActive) {
             activeTimers.push({ type: 'sticky', percentage: this.stickyTimer / this.stickyDuration });
         }
-        if (activeTimers.length > 0) {
+        if (activeTimers.length > 0 && !isLandscape) {
             this.renderer.drawPowerUpTimers(activeTimers);
         }
 

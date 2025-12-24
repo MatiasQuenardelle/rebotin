@@ -30,24 +30,48 @@ export class Renderer {
         this.ctx.restore();
     }
 
-    drawHUD(score, level, lives) {
+    drawHUD(score, level, lives, landscapeMode = false) {
         this.ctx.save();
 
-        this.ctx.font = 'bold 18px "Segoe UI", sans-serif';
-        this.ctx.fillStyle = '#ffffff';
-        this.ctx.textBaseline = 'top';
+        if (landscapeMode) {
+            // Vertical layout on left side for landscape mobile
+            this.ctx.font = 'bold 14px "Segoe UI", sans-serif';
+            this.ctx.fillStyle = '#ffffff';
+            this.ctx.textAlign = 'left';
+            this.ctx.textBaseline = 'middle';
 
-        // Score (left)
-        this.ctx.textAlign = 'left';
-        this.ctx.fillText(`SCORE: ${score}`, 30, 18);
+            // Semi-transparent background for readability
+            this.ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+            this.ctx.beginPath();
+            this.ctx.roundRect(5, this.height / 2 - 50, 70, 100, 8);
+            this.ctx.fill();
 
-        // Level (center)
-        this.ctx.textAlign = 'center';
-        this.ctx.fillText(`LEVEL ${level}`, this.width / 2, 18);
+            this.ctx.fillStyle = '#00d4ff';
+            this.ctx.fillText(`LVL ${level}`, 12, this.height / 2 - 30);
 
-        // Lives (right)
-        this.ctx.textAlign = 'right';
-        this.ctx.fillText(`LIVES: ${lives}`, this.width - 30, 18);
+            this.ctx.fillStyle = '#ffffff';
+            this.ctx.fillText(`${score}`, 12, this.height / 2);
+
+            this.ctx.fillStyle = '#ff6b9d';
+            this.ctx.fillText(`♥ ${lives}`, 12, this.height / 2 + 30);
+        } else {
+            // Original horizontal layout at top
+            this.ctx.font = 'bold 18px "Segoe UI", sans-serif';
+            this.ctx.fillStyle = '#ffffff';
+            this.ctx.textBaseline = 'top';
+
+            // Score (left)
+            this.ctx.textAlign = 'left';
+            this.ctx.fillText(`SCORE: ${score}`, 30, 18);
+
+            // Level (center)
+            this.ctx.textAlign = 'center';
+            this.ctx.fillText(`LEVEL ${level}`, this.width / 2, 18);
+
+            // Lives (right)
+            this.ctx.textAlign = 'right';
+            this.ctx.fillText(`LIVES: ${lives}`, this.width - 30, 18);
+        }
 
         this.ctx.restore();
     }
