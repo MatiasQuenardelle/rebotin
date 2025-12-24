@@ -331,6 +331,16 @@ export class Game {
                     return;
                 }
 
+                // Check if we freed a monster with laser
+                if (this.monsterBricks.includes(hitBrick)) {
+                    const monster = hitBrick.getMonster();
+                    if (monster && monster.state === 'trapped') {
+                        monster.free(); // Free the monster so it starts falling
+                        this.monsters.push(monster);
+                        this.monstersFreed++;
+                    }
+                }
+
                 // Chance to spawn power-up
                 this.trySpawnPowerUp(hitBrick);
             }
@@ -379,6 +389,7 @@ export class Game {
                     if (this.monsterBricks.includes(brick)) {
                         const monster = brick.getMonster();
                         if (monster && monster.state === 'trapped') {
+                            monster.free(); // Free the monster so it starts falling
                             this.monsters.push(monster);
                             this.monstersFreed++;
                         }
@@ -409,6 +420,7 @@ export class Game {
                     if (this.monsterBricks.includes(hitBrick)) {
                         const monster = hitBrick.getMonster();
                         if (monster && monster.state === 'trapped') {
+                            monster.free(); // Free the monster so it starts falling
                             this.monsters.push(monster);
                             this.monstersFreed++;
                         }

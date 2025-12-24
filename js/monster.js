@@ -16,8 +16,8 @@ export class Monster {
         this.startX = x;
 
         // Wind effect properties
-        this.windStrength = 0;
-        this.windDirection = 1;
+        this.windStrength = Math.random() * 2.5 + 0.5; // Start with random wind (0.5-3.0)
+        this.windDirection = Math.random() > 0.5 ? 1 : -1; // Random initial direction
         this.windChangeTimer = 0;
         this.windChangeDuration = 40; // Changes more frequently
 

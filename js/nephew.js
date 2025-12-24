@@ -22,8 +22,8 @@ export class Nephew {
         this.startX = x;
 
         // Wind effect properties
-        this.windStrength = 0;
-        this.windDirection = 1; // 1 for right, -1 for left
+        this.windStrength = Math.random() * 2 + 0.5; // Start with random wind (0.5-2.5)
+        this.windDirection = Math.random() > 0.5 ? 1 : -1; // Random initial direction
         this.windChangeTimer = 0;
         this.windChangeDuration = 60; // Change wind every 60 frames (~1 second)
 

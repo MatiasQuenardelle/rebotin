@@ -26,7 +26,8 @@ export class MonsterBrick {
     hit() {
         if (this.alive && !this.indestructible) {
             this.alive = false;
-            this.monster.free();
+            // Don't free the monster here - let game.js handle it
+            // this.monster.free();
             return this.points;
         }
         return 0;
