@@ -77,12 +77,19 @@ export class Nephew {
     }
 
     createCelebrationEffects() {
+        // Clear all existing effects first
+        this.hearts = [];
+        this.fireworks = [];
+        this.confetti = [];
+        this.stars = [];
+        this.sparkles = [];
+
         // Randomly select one of 6 celebration types
         const celebrationTypes = [
             'hearts', 'fireworks', 'confetti', 'stars', 'rainbow', 'sparkle'
         ];
         this.celebrationType = celebrationTypes[Math.floor(Math.random() * celebrationTypes.length)];
-        console.log(`[NEPHEW] Selected celebration type: ${this.celebrationType}`);
+        console.log(`[NEPHEW] ★★★ Selected celebration type: ${this.celebrationType} ★★★`);
 
         const centerX = this.x + this.width / 2;
         const centerY = this.y;
@@ -110,102 +117,109 @@ export class Nephew {
         }
     }
 
-    // Celebration Type 1: Hearts Explosion
+    // Celebration Type 1: HEARTS - Big pink/red hearts floating everywhere
     createHeartsExplosion(centerX, centerY) {
-        // Big hearts floating up all around
-        for (let i = 0; i < 12; i++) {
+        // Massive heart explosion across the screen
+        for (let i = 0; i < 25; i++) {
             this.hearts.push({
-                x: centerX + (Math.random() - 0.5) * 60,
-                y: centerY + (Math.random() - 0.5) * 40,
-                vy: -Math.random() * 2.5 - 1.5,
-                vx: (Math.random() - 0.5) * 3,
+                x: centerX + (Math.random() - 0.5) * 300,
+                y: centerY + (Math.random() - 0.5) * 100,
+                vy: -Math.random() * 3 - 2,
+                vx: (Math.random() - 0.5) * 4,
                 life: 1,
-                size: Math.random() * 12 + 10
+                size: Math.random() * 20 + 15
             });
         }
     }
 
-    // Celebration Type 2: Fireworks Show (lighter than before)
+    // Celebration Type 2: FIREWORKS - Colorful explosions in the sky
     createFireworksShow(centerX, centerY) {
-        // Just 3 firework bursts instead of 5
-        this.createFireworkBurst(centerX - 60, centerY - 50, '#ff6b6b');
-        this.createFireworkBurst(centerX + 60, centerY - 50, '#ffd93d');
-        this.createFireworkBurst(centerX, centerY - 90, '#6bcb77');
+        // Multiple colorful firework bursts
+        this.createFireworkBurst(centerX - 120, centerY - 80, '#ff6b6b');
+        this.createFireworkBurst(centerX + 120, centerY - 80, '#ffd93d');
+        this.createFireworkBurst(centerX, centerY - 150, '#6bcb77');
+        this.createFireworkBurst(centerX - 60, centerY - 120, '#4ecdc4');
+        this.createFireworkBurst(centerX + 60, centerY - 120, '#ff6b9d');
     }
 
-    // Celebration Type 3: Confetti Party
+    // Celebration Type 3: CONFETTI - Colorful paper rectangles raining down
     createConfettiParty(centerX, centerY) {
-        // Confetti raining down
-        for (let i = 0; i < 30; i++) {
+        // Heavy confetti rain from above
+        for (let i = 0; i < 60; i++) {
             this.confetti.push({
-                x: centerX + (Math.random() - 0.5) * 150,
-                y: centerY - 80 - Math.random() * 40,
-                vx: (Math.random() - 0.5) * 3,
-                vy: Math.random() * 2 + 1,
+                x: centerX + (Math.random() - 0.5) * 400,
+                y: centerY - 150 - Math.random() * 100,
+                vx: (Math.random() - 0.5) * 4,
+                vy: Math.random() * 3 + 1,
                 life: 1,
-                size: Math.random() * 8 + 5,
+                size: Math.random() * 12 + 8,
                 color: ['#ff6b6b', '#ffd93d', '#6bcb77', '#4ecdc4', '#ff6b9d', '#a855f7'][Math.floor(Math.random() * 6)],
                 rotation: Math.random() * Math.PI * 2,
-                rotationSpeed: (Math.random() - 0.5) * 0.2,
+                rotationSpeed: (Math.random() - 0.5) * 0.3,
                 wobble: Math.random() * Math.PI * 2
             });
         }
     }
 
-    // Celebration Type 4: Star Burst
+    // Celebration Type 4: GOLDEN STARS - Gold/yellow stars exploding outward
     createStarBurst(centerX, centerY) {
-        // Stars exploding outward in all directions
-        for (let i = 0; i < 16; i++) {
-            const angle = (i / 16) * Math.PI * 2;
+        // Golden star explosion
+        for (let i = 0; i < 24; i++) {
+            const angle = (i / 24) * Math.PI * 2;
+            const speed = 4 + Math.random() * 3;
             this.stars.push({
                 x: centerX,
-                y: centerY,
-                vx: Math.cos(angle) * 5,
-                vy: Math.sin(angle) * 5,
+                y: centerY - 50,
+                vx: Math.cos(angle) * speed,
+                vy: Math.sin(angle) * speed,
                 life: 1,
-                size: Math.random() * 6 + 5,
-                color: ['#ffd700', '#ff6b9d', '#00ffff', '#ff69b4', '#7fff00'][Math.floor(Math.random() * 5)],
+                size: Math.random() * 10 + 8,
+                color: ['#ffd700', '#ffec8b', '#ffa500', '#fff8dc'][Math.floor(Math.random() * 4)],
                 rotation: Math.random() * Math.PI * 2,
-                rotationSpeed: (Math.random() - 0.5) * 0.4
+                rotationSpeed: (Math.random() - 0.5) * 0.5
             });
         }
     }
 
-    // Celebration Type 5: Rainbow Spiral
+    // Celebration Type 5: RAINBOW - Full spectrum colors in circular pattern
     createRainbowSpiral(centerX, centerY) {
-        // Colorful spiral of stars and hearts
-        const colors = ['#ff0000', '#ff7f00', '#ffff00', '#00ff00', '#0000ff', '#9400d3'];
-        for (let i = 0; i < 18; i++) {
-            const angle = (i / 18) * Math.PI * 4; // Double spiral
-            const radius = i * 3;
-            this.stars.push({
-                x: centerX + Math.cos(angle) * radius,
-                y: centerY + Math.sin(angle) * radius,
-                vx: Math.cos(angle) * 3,
-                vy: Math.sin(angle) * 3,
-                life: 1,
-                size: 6,
-                color: colors[i % colors.length],
-                rotation: 0,
-                rotationSpeed: 0.3
-            });
+        // Rainbow colored circles expanding outward
+        const colors = ['#ff0000', '#ff7f00', '#ffff00', '#00ff00', '#0080ff', '#8000ff'];
+        for (let ring = 0; ring < 3; ring++) {
+            for (let i = 0; i < 12; i++) {
+                const angle = (i / 12) * Math.PI * 2 + ring * 0.5;
+                const speed = 3 + ring * 1.5;
+                this.stars.push({
+                    x: centerX,
+                    y: centerY - 50,
+                    vx: Math.cos(angle) * speed,
+                    vy: Math.sin(angle) * speed,
+                    life: 1,
+                    size: 10 - ring * 2,
+                    color: colors[i % colors.length],
+                    rotation: 0,
+                    rotationSpeed: 0.4
+                });
+            }
         }
     }
 
-    // Celebration Type 6: Sparkle Rain
+    // Celebration Type 6: BUBBLES - Floating circles rising up
     createSparkleRain(centerX, centerY) {
-        // Gentle rain of sparkling stars
-        for (let i = 0; i < 25; i++) {
-            this.stars.push({
-                x: centerX + (Math.random() - 0.5) * 120,
-                y: centerY - 80 - Math.random() * 60,
+        // Colorful bubbles floating upward
+        for (let i = 0; i < 35; i++) {
+            this.confetti.push({
+                x: centerX + (Math.random() - 0.5) * 300,
+                y: centerY + 50 + Math.random() * 50,
                 vx: (Math.random() - 0.5) * 2,
-                vy: Math.random() * 1.5 + 0.5,
+                vy: -Math.random() * 2.5 - 1,
                 life: 1,
-                size: Math.random() * 5 + 3,
-                color: ['#ffd700', '#ffffff', '#ffff00', '#ffe135'][Math.floor(Math.random() * 4)],
-                rotation: Math.random() * Math.PI * 2,
-                rotationSpeed: (Math.random() - 0.5) * 0.3
+                size: Math.random() * 18 + 10,
+                color: ['#87ceeb', '#98fb98', '#dda0dd', '#f0e68c', '#ffc0cb', '#add8e6'][Math.floor(Math.random() * 6)],
+                rotation: 0,
+                rotationSpeed: 0,
+                wobble: Math.random() * Math.PI * 2,
+                isBubble: true
             });
         }
     }
@@ -232,100 +246,102 @@ export class Nephew {
         const centerX = this.x + this.width / 2;
         const centerY = this.y;
 
-        // Spawn effects based on the celebration type, less frequently
+        // Spawn effects based on the celebration type
         switch (this.celebrationType) {
             case 'hearts':
-                // Occasional hearts
-                if (Math.random() < 0.15) {
+                // More hearts floating up
+                if (Math.random() < 0.2) {
                     this.hearts.push({
-                        x: centerX + (Math.random() - 0.5) * 60,
-                        y: centerY,
-                        vy: -Math.random() * 2 - 1,
-                        vx: (Math.random() - 0.5) * 2,
+                        x: centerX + (Math.random() - 0.5) * 200,
+                        y: centerY + Math.random() * 30,
+                        vy: -Math.random() * 3 - 1.5,
+                        vx: (Math.random() - 0.5) * 3,
                         life: 1,
-                        size: Math.random() * 12 + 10
+                        size: Math.random() * 18 + 12
                     });
                 }
                 break;
 
             case 'fireworks':
-                // Occasional small firework burst
-                if (Math.random() < 0.1) {
-                    const offsetX = (Math.random() - 0.5) * 150;
-                    const offsetY = -50 - Math.random() * 80;
-                    const colors = ['#ff6b6b', '#ffd93d', '#6bcb77', '#4ecdc4', '#ff6b9d'];
+                // More firework bursts
+                if (Math.random() < 0.08) {
+                    const offsetX = (Math.random() - 0.5) * 250;
+                    const offsetY = -50 - Math.random() * 120;
+                    const colors = ['#ff6b6b', '#ffd93d', '#6bcb77', '#4ecdc4', '#ff6b9d', '#a855f7'];
                     this.createFireworkBurst(centerX + offsetX, centerY + offsetY, colors[Math.floor(Math.random() * colors.length)]);
                 }
                 break;
 
             case 'confetti':
-                // Light confetti drops
-                if (Math.random() < 0.25) {
+                // Continuous confetti rain
+                if (Math.random() < 0.35) {
                     this.confetti.push({
-                        x: centerX + (Math.random() - 0.5) * 150,
-                        y: centerY - 100,
-                        vx: (Math.random() - 0.5) * 3,
-                        vy: Math.random() * 1.5 + 0.5,
+                        x: centerX + (Math.random() - 0.5) * 350,
+                        y: centerY - 150,
+                        vx: (Math.random() - 0.5) * 4,
+                        vy: Math.random() * 2.5 + 1,
                         life: 1,
-                        size: Math.random() * 8 + 5,
+                        size: Math.random() * 10 + 6,
                         color: ['#ff6b6b', '#ffd93d', '#6bcb77', '#4ecdc4', '#ff6b9d', '#a855f7'][Math.floor(Math.random() * 6)],
                         rotation: Math.random() * Math.PI * 2,
-                        rotationSpeed: (Math.random() - 0.5) * 0.2,
+                        rotationSpeed: (Math.random() - 0.5) * 0.3,
                         wobble: Math.random() * Math.PI * 2
                     });
                 }
                 break;
 
             case 'stars':
-                // Occasional star
-                if (Math.random() < 0.12) {
+                // Golden stars bursting outward
+                if (Math.random() < 0.15) {
                     const angle = Math.random() * Math.PI * 2;
                     this.stars.push({
                         x: centerX,
-                        y: centerY,
-                        vx: Math.cos(angle) * 5,
-                        vy: Math.sin(angle) * 5,
+                        y: centerY - 50,
+                        vx: Math.cos(angle) * (4 + Math.random() * 2),
+                        vy: Math.sin(angle) * (4 + Math.random() * 2),
                         life: 1,
-                        size: Math.random() * 6 + 5,
-                        color: ['#ffd700', '#ff6b9d', '#00ffff', '#ff69b4', '#7fff00'][Math.floor(Math.random() * 5)],
+                        size: Math.random() * 8 + 6,
+                        color: ['#ffd700', '#ffec8b', '#ffa500', '#fff8dc'][Math.floor(Math.random() * 4)],
                         rotation: Math.random() * Math.PI * 2,
-                        rotationSpeed: (Math.random() - 0.5) * 0.4
+                        rotationSpeed: (Math.random() - 0.5) * 0.5
                     });
                 }
                 break;
 
             case 'rainbow':
-                // Add few rainbow stars
-                if (Math.random() < 0.1) {
-                    const colors = ['#ff0000', '#ff7f00', '#ffff00', '#00ff00', '#0000ff', '#9400d3'];
+                // Rainbow colored particles
+                if (Math.random() < 0.18) {
+                    const colors = ['#ff0000', '#ff7f00', '#ffff00', '#00ff00', '#0080ff', '#8000ff'];
                     const angle = Math.random() * Math.PI * 2;
                     this.stars.push({
                         x: centerX,
-                        y: centerY,
-                        vx: Math.cos(angle) * 3,
-                        vy: Math.sin(angle) * 3,
+                        y: centerY - 50,
+                        vx: Math.cos(angle) * (3 + Math.random() * 2),
+                        vy: Math.sin(angle) * (3 + Math.random() * 2),
                         life: 1,
-                        size: 6,
+                        size: 8,
                         color: colors[Math.floor(Math.random() * colors.length)],
                         rotation: 0,
-                        rotationSpeed: 0.3
+                        rotationSpeed: 0.4
                     });
                 }
                 break;
 
             case 'sparkle':
-                // Light sparkle rain
-                if (Math.random() < 0.2) {
-                    this.stars.push({
-                        x: centerX + (Math.random() - 0.5) * 100,
-                        y: centerY - 80,
+                // More bubbles rising
+                if (Math.random() < 0.25) {
+                    this.confetti.push({
+                        x: centerX + (Math.random() - 0.5) * 250,
+                        y: centerY + 30,
                         vx: (Math.random() - 0.5) * 2,
-                        vy: Math.random() * 1.5 + 0.5,
+                        vy: -Math.random() * 2 - 1,
                         life: 1,
-                        size: Math.random() * 5 + 3,
-                        color: ['#ffd700', '#ffffff', '#ffff00', '#ffe135'][Math.floor(Math.random() * 4)],
-                        rotation: Math.random() * Math.PI * 2,
-                        rotationSpeed: (Math.random() - 0.5) * 0.3
+                        size: Math.random() * 16 + 8,
+                        color: ['#87ceeb', '#98fb98', '#dda0dd', '#f0e68c', '#ffc0cb', '#add8e6'][Math.floor(Math.random() * 6)],
+                        rotation: 0,
+                        rotationSpeed: 0,
+                        wobble: Math.random() * Math.PI * 2,
+                        isBubble: true
                     });
                 }
                 break;
@@ -554,15 +570,27 @@ export class Nephew {
             ctx.shadowBlur = 0;
         });
 
-        // Draw confetti
+        // Draw confetti (rectangles) or bubbles (circles)
         this.confetti.forEach(c => {
             ctx.globalAlpha = c.life;
             ctx.fillStyle = c.color;
             ctx.save();
             ctx.translate(c.x, c.y);
-            ctx.rotate(c.rotation);
-            // Draw rectangle confetti
-            ctx.fillRect(-c.size / 2, -c.size / 4, c.size, c.size / 2);
+            if (c.isBubble) {
+                // Draw bubble (circle with shine)
+                ctx.beginPath();
+                ctx.arc(0, 0, c.size / 2, 0, Math.PI * 2);
+                ctx.fill();
+                // Bubble shine
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+                ctx.beginPath();
+                ctx.arc(-c.size / 6, -c.size / 6, c.size / 5, 0, Math.PI * 2);
+                ctx.fill();
+            } else {
+                // Draw rectangle confetti
+                ctx.rotate(c.rotation);
+                ctx.fillRect(-c.size / 2, -c.size / 4, c.size, c.size / 2);
+            }
             ctx.restore();
         });
 
