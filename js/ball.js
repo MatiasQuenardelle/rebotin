@@ -84,6 +84,39 @@ export class Ball {
     render(ctx) {
         ctx.save();
 
+        // Draw aim indicator when ball is not launched (larger and more visible)
+        if (!this.launched) {
+            const lineLength = 150; // Longer trajectory line
+            const pulseTime = Date.now() / 500;
+            const pulseAlpha = 0.4 + Math.sin(pulseTime) * 0.3;
+
+            // Draw a thick dashed line showing trajectory
+            ctx.strokeStyle = `rgba(0, 212, 255, ${pulseAlpha})`;
+            ctx.lineWidth = 4;
+            ctx.setLineDash([10, 10]);
+            ctx.shadowBlur = 15;
+            ctx.shadowColor = 'rgba(0, 212, 255, 0.8)';
+
+            ctx.beginPath();
+            ctx.moveTo(this.x, this.y);
+            ctx.lineTo(this.x, this.y - lineLength);
+            ctx.stroke();
+
+            // Draw arrow head at the end
+            const arrowSize = 15;
+            ctx.setLineDash([]);
+            ctx.fillStyle = `rgba(0, 212, 255, ${pulseAlpha})`;
+            ctx.beginPath();
+            ctx.moveTo(this.x, this.y - lineLength);
+            ctx.lineTo(this.x - arrowSize / 2, this.y - lineLength + arrowSize);
+            ctx.lineTo(this.x + arrowSize / 2, this.y - lineLength + arrowSize);
+            ctx.closePath();
+            ctx.fill();
+
+            ctx.shadowBlur = 0;
+            ctx.setLineDash([]);
+        }
+
         // Draw trail
         for (let i = 0; i < this.trailPositions.length; i++) {
             const pos = this.trailPositions[i];
@@ -96,20 +129,20 @@ export class Ball {
             ctx.fill();
         }
 
-        // Draw main ball with glow
-        ctx.shadowBlur = 15;
-        ctx.shadowColor = 'rgba(255, 255, 255, 0.8)';
+        // Draw main ball with glow (make it bigger and more visible)
+        ctx.shadowBlur = 20;
+        ctx.shadowColor = 'rgba(255, 255, 255, 0.9)';
 
         ctx.beginPath();
-        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+        ctx.arc(this.x, this.y, this.radius * 1.2, 0, Math.PI * 2);
         ctx.fillStyle = this.color;
         ctx.fill();
 
         // Inner highlight
         ctx.shadowBlur = 0;
         ctx.beginPath();
-        ctx.arc(this.x - 2, this.y - 2, this.radius * 0.4, 0, Math.PI * 2);
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+        ctx.arc(this.x - 2, this.y - 2, this.radius * 0.5, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
         ctx.fill();
 
         ctx.restore();

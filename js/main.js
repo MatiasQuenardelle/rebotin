@@ -27,10 +27,17 @@ if (nephewMode) {
     speedControls.classList.add('hidden');
 }
 
+// Side controls and weapon wheel elements
+const sideControls = document.getElementById('sideControls');
+const tiltBtn = document.getElementById('tiltBtn');
+const weaponWheel = document.getElementById('weaponWheel');
+const wheelItems = document.querySelectorAll('.wheel-item');
+
 // Show gyro button if device supports it (mobile devices)
 const isMobile = 'ontouchstart' in window;
 if (input.isGyroAvailable() && isMobile) {
     gyroBtn.classList.remove('hidden');
+    tiltBtn.classList.remove('hidden');
 
     // Auto-enable tilt on mobile by default
     (async () => {
@@ -38,6 +45,7 @@ if (input.isGyroAvailable() && isMobile) {
         if (enabled) {
             gyroBtn.classList.add('active');
             gyroBtn.textContent = 'Tilt: ON';
+            tiltBtn.classList.add('active');
         }
     })();
 }
@@ -49,17 +57,104 @@ gyroBtn.addEventListener('click', async () => {
         input.disableGyro();
         gyroBtn.classList.remove('active');
         gyroBtn.textContent = 'Tilt: OFF';
+        tiltBtn.classList.remove('active');
     } else {
         // Turn on (may need permission if first time)
         const enabled = await input.requestGyroPermission();
         if (enabled) {
             gyroBtn.classList.add('active');
             gyroBtn.textContent = 'Tilt: ON';
+            tiltBtn.classList.add('active');
         } else {
             alert('Could not enable tilt controls. Please allow motion sensor access.');
         }
     }
 });
+
+// Tilt button (side control) click handler - same as gyro button
+tiltBtn.addEventListener('click', async () => {
+    if (input.isGyroEnabled()) {
+        // Turn off
+        input.disableGyro();
+        gyroBtn.classList.remove('active');
+        gyroBtn.textContent = 'Tilt: OFF';
+        tiltBtn.classList.remove('active');
+    } else {
+        // Turn on (may need permission if first time)
+        const enabled = await input.requestGyroPermission();
+        if (enabled) {
+            gyroBtn.classList.add('active');
+            gyroBtn.textContent = 'Tilt: ON';
+            tiltBtn.classList.add('active');
+        } else {
+            alert('Could not enable tilt controls. Please allow motion sensor access.');
+        }
+    }
+});
+
+// Weapon wheel interaction handlers
+wheelItems.forEach(item => {
+    item.addEventListener('click', () => {
+        const weapon = item.dataset.weapon;
+
+        // Only allow activation during gameplay
+        if (game.state !== game.states.PLAYING) {
+            return;
+        }
+
+        // Activate the corresponding power-up if we have it
+        if (weapon === 'laser' && game.laserActive) {
+            // Manual laser fire when wheel item is clicked
+            if (game.ball.launched) {
+                game.fireLasers();
+            }
+        }
+
+        // Visual feedback
+        item.classList.add('active');
+        setTimeout(() => item.classList.remove('active'), 300);
+    });
+});
+
+// Update weapon wheel state based on active power-ups
+function updateWeaponWheel() {
+    wheelItems.forEach(item => {
+        const weapon = item.dataset.weapon;
+
+        // Enable/disable based on active power-ups
+        if (weapon === 'laser') {
+            if (game.laserActive) {
+                item.classList.remove('disabled');
+            } else {
+                item.classList.add('disabled');
+            }
+        } else if (weapon === 'expand') {
+            if (game.paddle.sizeModifier > 1 && game.paddle.sizeTimer > 0) {
+                item.classList.remove('disabled');
+                item.classList.add('active');
+            } else {
+                item.classList.add('disabled');
+                item.classList.remove('active');
+            }
+        } else if (weapon === 'shrink') {
+            if (game.paddle.sizeModifier < 1 && game.paddle.sizeTimer > 0) {
+                item.classList.remove('disabled');
+                item.classList.add('active');
+            } else {
+                item.classList.add('disabled');
+                item.classList.remove('active');
+            }
+        } else if (weapon === 'inverse') {
+            if (game.paddle.inverseControls && game.paddle.inverseTimer > 0) {
+                item.classList.remove('disabled');
+                item.classList.add('active');
+            } else {
+                item.classList.add('disabled');
+                item.classList.remove('active');
+            }
+        }
+    });
+}
 
 // Speed button click handlers
 speedButtons.forEach(btn => {
@@ -258,6 +353,9 @@ function gameLoop(timestamp) {
 
     game.update(deltaTime);
     game.render();
+
+    // Update weapon wheel UI state
+    updateWeaponWheel();
 
     requestAnimationFrame(gameLoop);
 }

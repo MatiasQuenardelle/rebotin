@@ -24,6 +24,47 @@
             <button id="gyroBtn" class="gyro-btn hidden">Tilt Control</button>
             <button id="fullscreenBtn" class="fullscreen-btn">Fullscreen</button>
         </div>
+
+        <!-- Side control panel for landscape mode -->
+        <div id="sideControls" class="side-controls">
+            <button id="tiltBtn" class="control-btn tilt-btn hidden">
+                <span class="btn-icon">📱</span>
+                <span class="btn-label">TILT</span>
+            </button>
+            <button id="laserBtn" class="control-btn laser-btn disabled">
+                <span class="btn-icon">⚡</span>
+                <span class="btn-label">LASER</span>
+            </button>
+            <button id="expandBtn" class="control-btn expand-btn disabled">
+                <span class="btn-icon">⬌</span>
+                <span class="btn-label">EXPAND</span>
+            </button>
+            <button id="shrinkBtn" class="control-btn shrink-btn disabled">
+                <span class="btn-icon">⬍</span>
+                <span class="btn-label">SHRINK</span>
+            </button>
+            <button id="inverseBtn" class="control-btn inverse-btn disabled">
+                <span class="btn-icon">⟲</span>
+                <span class="btn-label">INVERSE</span>
+            </button>
+        </div>
+
+        <!-- Horizontal weapon wheel -->
+        <div id="weaponWheel" class="weapon-wheel">
+            <div class="wheel-item" data-weapon="laser">
+                <div class="wheel-icon">⚡</div>
+            </div>
+            <div class="wheel-item" data-weapon="expand">
+                <div class="wheel-icon">⬌</div>
+            </div>
+            <div class="wheel-item" data-weapon="shrink">
+                <div class="wheel-icon">⬍</div>
+            </div>
+            <div class="wheel-item" data-weapon="inverse">
+                <div class="wheel-icon">⟲</div>
+            </div>
+        </div>
+
         <canvas id="gameCanvas" width="800" height="600"></canvas>
     </div>
 
