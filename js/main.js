@@ -27,6 +27,11 @@ if (nephewMode) {
     speedControls.classList.add('hidden');
 }
 
+// Left HUD elements for landscape mode
+const hudLevel = document.getElementById('hudLevel');
+const hudScore = document.getElementById('hudScore');
+const hudLives = document.getElementById('hudLives');
+
 // Side controls and weapon wheel elements
 const sideControls = document.getElementById('sideControls');
 const tiltBtn = document.getElementById('tiltBtn');
@@ -208,6 +213,16 @@ function updateWeaponWheel() {
     } else {
         stickyBtn.classList.add('disabled');
         stickyBtn.classList.remove('active');
+    }
+}
+
+// Update left HUD elements (for landscape mode)
+function updateLeftHUD() {
+    if (hudLevel) hudLevel.textContent = game.level;
+    if (hudScore) hudScore.textContent = game.score;
+    if (hudLives) {
+        // Show hearts for lives
+        hudLives.textContent = '♥'.repeat(Math.max(0, game.lives));
     }
 }
 
@@ -411,6 +426,9 @@ function gameLoop(timestamp) {
 
     // Update weapon wheel UI state
     updateWeaponWheel();
+
+    // Update left HUD (for landscape mode)
+    updateLeftHUD();
 
     requestAnimationFrame(gameLoop);
 }

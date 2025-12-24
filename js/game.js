@@ -593,9 +593,16 @@ export class Game {
     }
 
     render() {
+        // Detect landscape mode for mobile
+        const isLandscapeMobile = window.innerWidth > window.innerHeight && window.innerWidth <= 950;
+
         this.renderer.clear();
         this.renderer.drawBackground();
-        this.renderer.drawGameArea();
+
+        // Skip game area border in landscape - it wastes vertical space
+        if (!isLandscapeMobile) {
+            this.renderer.drawGameArea();
+        }
 
         // Draw bricks
         for (const brick of this.bricks) {
@@ -637,17 +644,16 @@ export class Game {
             this.nephew.render(this.ctx);
         }
 
-        // Draw HUD - detect landscape mode for mobile
-        const isLandscape = window.innerWidth > window.innerHeight && window.innerWidth <= 950;
-        this.renderer.drawHUD(this.score, this.level, this.lives, isLandscape);
+        // Draw HUD (use isLandscapeMobile from start of render)
+        this.renderer.drawHUD(this.score, this.level, this.lives, isLandscapeMobile);
 
         // Only show controls hint in portrait/desktop mode
-        if (!isLandscape) {
+        if (!isLandscapeMobile) {
             this.renderer.drawControls();
         }
 
         // Draw rescue status indicator (skip in landscape - no room)
-        if (!isLandscape && this.nephew && (this.state === this.states.PLAYING || this.state === this.states.RESCUE_PHASE)) {
+        if (!isLandscapeMobile && this.nephew && (this.state === this.states.PLAYING || this.state === this.states.RESCUE_PHASE)) {
             this.renderer.drawRescueStatus(this.nephewFreed, this.nephewRescued, this.characterName);
         }
 
@@ -669,7 +675,7 @@ export class Game {
         if (this.stickyActive) {
             activeTimers.push({ type: 'sticky', percentage: this.stickyTimer / this.stickyDuration });
         }
-        if (activeTimers.length > 0 && !isLandscape) {
+        if (activeTimers.length > 0 && !isLandscapeMobile) {
             this.renderer.drawPowerUpTimers(activeTimers);
         }
 

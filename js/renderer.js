@@ -34,26 +34,8 @@ export class Renderer {
         this.ctx.save();
 
         if (landscapeMode) {
-            // Vertical layout on left side for landscape mobile
-            this.ctx.font = 'bold 14px "Segoe UI", sans-serif';
-            this.ctx.fillStyle = '#ffffff';
-            this.ctx.textAlign = 'left';
-            this.ctx.textBaseline = 'middle';
-
-            // Semi-transparent background for readability
-            this.ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
-            this.ctx.beginPath();
-            this.ctx.roundRect(5, this.height / 2 - 50, 70, 100, 8);
-            this.ctx.fill();
-
-            this.ctx.fillStyle = '#00d4ff';
-            this.ctx.fillText(`LVL ${level}`, 12, this.height / 2 - 30);
-
-            this.ctx.fillStyle = '#ffffff';
-            this.ctx.fillText(`${score}`, 12, this.height / 2);
-
-            this.ctx.fillStyle = '#ff6b9d';
-            this.ctx.fillText(`♥ ${lives}`, 12, this.height / 2 + 30);
+            // In landscape mode, HUD is drawn as HTML elements outside canvas
+            // So we don't draw anything here on canvas
         } else {
             // Original horizontal layout at top
             this.ctx.font = 'bold 18px "Segoe UI", sans-serif';
