@@ -6,7 +6,7 @@ export class PowerUp {
         this.height = 24;
 
         // Random type if not specified
-        const types = ['laser', 'inverse', 'expand', 'shrink', 'destroyer', 'sticky'];
+        const types = ['laser', 'inverse', 'expand', 'shrink', 'destroyer', 'sticky', 'life'];
         this.type = type || types[Math.floor(Math.random() * types.length)];
 
         this.fallSpeed = 2;
@@ -48,6 +48,11 @@ export class PowerUp {
                 color: '#00a8ff',
                 glowColor: '#00a8ff',
                 icon: 'sticky'
+            },
+            life: {
+                color: '#ff1493',
+                glowColor: '#ff1493',
+                icon: 'life'
             }
         };
         return configs[this.type] || configs.laser;
@@ -234,6 +239,25 @@ export class PowerUp {
                 ctx.moveTo(0, 7);
                 ctx.lineTo(0, 9);
                 ctx.stroke();
+                break;
+
+            case 'life':
+                // Heart icon
+                ctx.fillStyle = '#ffffff';
+                ctx.beginPath();
+                // Left heart bump
+                ctx.arc(-3, -2, 3.5, 0, Math.PI * 2);
+                ctx.fill();
+                // Right heart bump
+                ctx.beginPath();
+                ctx.arc(3, -2, 3.5, 0, Math.PI * 2);
+                ctx.fill();
+                // Heart bottom triangle
+                ctx.beginPath();
+                ctx.moveTo(-6, -1);
+                ctx.lineTo(0, 6);
+                ctx.lineTo(6, -1);
+                ctx.fill();
                 break;
         }
     }

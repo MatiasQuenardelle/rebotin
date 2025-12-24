@@ -554,6 +554,10 @@ export class Game {
                 this.stickyTimer = this.stickyDuration;
                 this.ball.enableStickyMode();
                 break;
+
+            case 'life':
+                this.lives++;
+                break;
         }
     }
 
