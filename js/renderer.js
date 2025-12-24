@@ -73,37 +73,92 @@ export class Renderer {
     drawStartScreen() {
         this.ctx.save();
 
-        // Darken background
-        this.ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+        // Animated gradient background overlay
+        const time = Date.now() / 1000;
+        const gradient = this.ctx.createRadialGradient(
+            this.width / 2, this.height / 2, 0,
+            this.width / 2, this.height / 2, this.width / 2
+        );
+        gradient.addColorStop(0, 'rgba(0, 20, 40, 0.85)');
+        gradient.addColorStop(0.5, 'rgba(0, 10, 30, 0.90)');
+        gradient.addColorStop(1, 'rgba(0, 0, 20, 0.95)');
+        this.ctx.fillStyle = gradient;
         this.ctx.fillRect(0, 0, this.width, this.height);
 
-        // Title
-        this.ctx.font = 'bold 48px "Segoe UI", sans-serif';
+        // Decorative animated stars/particles in background
+        for (let i = 0; i < 20; i++) {
+            const x = (this.width / 20 * i + time * 10 * (i % 3 + 1)) % this.width;
+            const y = (this.height / 15 * (i % 15) + time * 5 * (i % 2 + 1)) % this.height;
+            this.ctx.fillStyle = `rgba(255, 255, 255, ${0.1 + Math.sin(time + i) * 0.1})`;
+            this.ctx.beginPath();
+            this.ctx.arc(x, y, 1.5, 0, Math.PI * 2);
+            this.ctx.fill();
+        }
+
+        // Main title box with border
+        const boxWidth = 500;
+        const boxHeight = 320;
+        const boxX = (this.width - boxWidth) / 2;
+        const boxY = (this.height - boxHeight) / 2 - 20;
+
+        // Glowing border
+        this.ctx.strokeStyle = '#00d4ff';
+        this.ctx.lineWidth = 3;
+        this.ctx.shadowBlur = 25;
+        this.ctx.shadowColor = '#00d4ff';
+        this.ctx.beginPath();
+        this.ctx.roundRect(boxX, boxY, boxWidth, boxHeight, 15);
+        this.ctx.stroke();
+
+        // Inner glow
+        this.ctx.strokeStyle = 'rgba(0, 212, 255, 0.3)';
+        this.ctx.lineWidth = 1;
+        this.ctx.shadowBlur = 15;
+        this.ctx.beginPath();
+        this.ctx.roundRect(boxX + 5, boxY + 5, boxWidth - 10, boxHeight - 10, 12);
+        this.ctx.stroke();
+
+        // Main title with pulsing effect
+        const pulse = 1 + Math.sin(time * 2) * 0.05;
+        this.ctx.font = `bold ${64 * pulse}px "Segoe UI", sans-serif`;
         this.ctx.fillStyle = '#00d4ff';
         this.ctx.textAlign = 'center';
         this.ctx.textBaseline = 'middle';
-        this.ctx.shadowBlur = 20;
+        this.ctx.shadowBlur = 30;
         this.ctx.shadowColor = '#00d4ff';
-        this.ctx.fillText('BREAKOUT', this.width / 2, this.height / 2 - 70);
+        this.ctx.fillText('REBOTÍN', this.width / 2, boxY + 70);
+
+        // Decorative line
+        this.ctx.shadowBlur = 10;
+        this.ctx.strokeStyle = '#ff6b9d';
+        this.ctx.lineWidth = 2;
+        this.ctx.beginPath();
+        this.ctx.moveTo(this.width / 2 - 150, boxY + 115);
+        this.ctx.lineTo(this.width / 2 + 150, boxY + 115);
+        this.ctx.stroke();
 
         // Subtitle - rescue mission
-        this.ctx.shadowBlur = 10;
+        this.ctx.shadowBlur = 15;
         this.ctx.shadowColor = '#ff6b9d';
-        this.ctx.font = 'bold 20px "Segoe UI", sans-serif';
+        this.ctx.font = 'bold 22px "Segoe UI", sans-serif';
         this.ctx.fillStyle = '#ff6b9d';
-        this.ctx.fillText('~ Edición Rescate ~', this.width / 2, this.height / 2 - 25);
+        this.ctx.fillText('~ Misión de Rescate ~', this.width / 2, boxY + 145);
 
-        // Mission text
-        this.ctx.shadowBlur = 0;
-        this.ctx.font = '16px "Segoe UI", sans-serif';
-        this.ctx.fillStyle = '#ffaa00';
-        this.ctx.fillText('¡Libera a tu sobrino de la prisión', this.width / 2, this.height / 2 + 15);
-        this.ctx.fillText('y atrápalo con tu plataforma!', this.width / 2, this.height / 2 + 35);
+        // Mission text with icon-style emphasis
+        this.ctx.shadowBlur = 5;
+        this.ctx.shadowColor = '#ffaa00';
+        this.ctx.font = 'bold 17px "Segoe UI", sans-serif';
+        this.ctx.fillStyle = '#ffdd66';
+        this.ctx.fillText('¡Libera a tu hermano o hermana', this.width / 2, boxY + 190);
+        this.ctx.fillText('de la prisión y rescátalos!', this.width / 2, boxY + 215);
 
-        // Instructions
-        this.ctx.font = '20px "Segoe UI", sans-serif';
-        this.ctx.fillStyle = '#ffffff';
-        this.ctx.fillText('Toca o presiona ESPACIO para comenzar', this.width / 2, this.height / 2 + 80);
+        // Animated instruction text
+        const instructionAlpha = 0.7 + Math.sin(time * 3) * 0.3;
+        this.ctx.shadowBlur = 8;
+        this.ctx.shadowColor = '#ffffff';
+        this.ctx.font = 'bold 20px "Segoe UI", sans-serif';
+        this.ctx.fillStyle = `rgba(255, 255, 255, ${instructionAlpha})`;
+        this.ctx.fillText('▶ Presiona ESPACIO o toca para comenzar ◀', this.width / 2, boxY + 270);
 
         this.ctx.restore();
     }
@@ -111,50 +166,108 @@ export class Renderer {
     drawCharacterSelect() {
         this.ctx.save();
 
-        // Darken background
-        this.ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+        // Animated gradient background
+        const time = Date.now() / 1000;
+        const gradient = this.ctx.createRadialGradient(
+            this.width / 2, this.height / 2, 0,
+            this.width / 2, this.height / 2, this.width / 2
+        );
+        gradient.addColorStop(0, 'rgba(0, 20, 40, 0.90)');
+        gradient.addColorStop(0.5, 'rgba(0, 10, 30, 0.92)');
+        gradient.addColorStop(1, 'rgba(0, 0, 20, 0.95)');
+        this.ctx.fillStyle = gradient;
         this.ctx.fillRect(0, 0, this.width, this.height);
 
-        // Title
-        this.ctx.font = 'bold 36px "Segoe UI", sans-serif';
+        // Title with glow
+        this.ctx.font = 'bold 40px "Segoe UI", sans-serif';
         this.ctx.fillStyle = '#00d4ff';
         this.ctx.textAlign = 'center';
         this.ctx.textBaseline = 'middle';
-        this.ctx.shadowBlur = 15;
+        this.ctx.shadowBlur = 20;
         this.ctx.shadowColor = '#00d4ff';
-        this.ctx.fillText('¿A quién quieres salvar?', this.width / 2, this.height / 2 - 60);
+        this.ctx.fillText('¿A quién deseas rescatar?', this.width / 2, this.height / 2 - 100);
 
-        // Felipe button
-        const btnWidth = 150;
-        const btnHeight = 50;
-        const felipeX = this.width / 2 - btnWidth - 20;
-        const julietaX = this.width / 2 + 20;
-        const btnY = this.height / 2 + 20;
-
-        // Felipe button
+        // Subtitle
         this.ctx.shadowBlur = 10;
+        this.ctx.font = '18px "Segoe UI", sans-serif';
+        this.ctx.fillStyle = '#ffdd66';
+        this.ctx.fillText('Elige a tu hermano o hermana', this.width / 2, this.height / 2 - 55);
+
+        // Button dimensions
+        const btnWidth = 180;
+        const btnHeight = 70;
+        const felipeX = this.width / 2 - btnWidth - 30;
+        const julietaX = this.width / 2 + 30;
+        const btnY = this.height / 2 + 10;
+
+        // Felipe button with hover effect simulation
+        const felipePulse = 1 + Math.sin(time * 3) * 0.05;
+
+        // Felipe button border
+        this.ctx.shadowBlur = 20;
         this.ctx.shadowColor = '#4a90d9';
+        this.ctx.strokeStyle = '#6ab0f9';
+        this.ctx.lineWidth = 3;
+        this.ctx.beginPath();
+        this.ctx.roundRect(felipeX - 2, btnY - 2, btnWidth + 4, btnHeight + 4, 12);
+        this.ctx.stroke();
+
+        // Felipe button fill
+        this.ctx.shadowBlur = 15;
         this.ctx.fillStyle = '#4a90d9';
         this.ctx.beginPath();
         this.ctx.roundRect(felipeX, btnY, btnWidth, btnHeight, 10);
         this.ctx.fill();
 
-        this.ctx.shadowBlur = 0;
-        this.ctx.font = 'bold 24px "Segoe UI", sans-serif';
+        // Felipe icon (♂)
+        this.ctx.shadowBlur = 5;
+        this.ctx.font = 'bold 32px "Segoe UI", sans-serif';
         this.ctx.fillStyle = '#ffffff';
-        this.ctx.fillText('Felipe', felipeX + btnWidth / 2, btnY + btnHeight / 2);
+        this.ctx.fillText('♂', felipeX + btnWidth / 2, btnY + 25);
 
-        // Julieta button
-        this.ctx.shadowBlur = 10;
+        // Felipe text
+        this.ctx.shadowBlur = 3;
+        this.ctx.font = `bold ${26 * felipePulse}px "Segoe UI", sans-serif`;
+        this.ctx.fillStyle = '#ffffff';
+        this.ctx.fillText('Felipe', felipeX + btnWidth / 2, btnY + 52);
+
+        // Julieta button with hover effect simulation
+        const julietaPulse = 1 + Math.sin(time * 3 + Math.PI) * 0.05;
+
+        // Julieta button border
+        this.ctx.shadowBlur = 20;
         this.ctx.shadowColor = '#ff6b9d';
+        this.ctx.strokeStyle = '#ff8bb5';
+        this.ctx.lineWidth = 3;
+        this.ctx.beginPath();
+        this.ctx.roundRect(julietaX - 2, btnY - 2, btnWidth + 4, btnHeight + 4, 12);
+        this.ctx.stroke();
+
+        // Julieta button fill
+        this.ctx.shadowBlur = 15;
         this.ctx.fillStyle = '#ff6b9d';
         this.ctx.beginPath();
         this.ctx.roundRect(julietaX, btnY, btnWidth, btnHeight, 10);
         this.ctx.fill();
 
-        this.ctx.shadowBlur = 0;
+        // Julieta icon (♀)
+        this.ctx.shadowBlur = 5;
+        this.ctx.font = 'bold 32px "Segoe UI", sans-serif';
         this.ctx.fillStyle = '#ffffff';
-        this.ctx.fillText('Julieta', julietaX + btnWidth / 2, btnY + btnHeight / 2);
+        this.ctx.fillText('♀', julietaX + btnWidth / 2, btnY + 25);
+
+        // Julieta text
+        this.ctx.shadowBlur = 3;
+        this.ctx.font = `bold ${26 * julietaPulse}px "Segoe UI", sans-serif`;
+        this.ctx.fillStyle = '#ffffff';
+        this.ctx.fillText('Julieta', julietaX + btnWidth / 2, btnY + 52);
+
+        // Instruction text
+        const instructionAlpha = 0.6 + Math.sin(time * 2.5) * 0.3;
+        this.ctx.shadowBlur = 5;
+        this.ctx.font = '16px "Segoe UI", sans-serif';
+        this.ctx.fillStyle = `rgba(255, 255, 255, ${instructionAlpha})`;
+        this.ctx.fillText('Haz clic en tu elección', this.width / 2, this.height / 2 + 120);
 
         this.ctx.restore();
     }
@@ -194,29 +307,22 @@ export class Renderer {
         // Text backdrop (small rounded rect at top)
         this.ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
         const backdropWidth = 320;
-        const backdropHeight = 80;
+        const backdropHeight = 60;
         const backdropX = (this.width - backdropWidth) / 2;
         const backdropY = 60;
         this.ctx.beginPath();
         this.ctx.roundRect(backdropX, backdropY, backdropWidth, backdropHeight, 15);
         this.ctx.fill();
 
-        // Animated "RESCUED!" text at top
+        // Level complete message (centered)
         const pulse = 1 + Math.sin(Date.now() / 150) * 0.1;
-        this.ctx.font = `bold ${32 * pulse}px "Segoe UI", sans-serif`;
-        this.ctx.fillStyle = '#ff6b9d';
+        this.ctx.shadowBlur = 20;
+        this.ctx.shadowColor = '#2ecc71';
+        this.ctx.font = `bold ${28 * pulse}px "Segoe UI", sans-serif`;
+        this.ctx.fillStyle = '#2ecc71';
         this.ctx.textAlign = 'center';
         this.ctx.textBaseline = 'middle';
-        this.ctx.shadowBlur = 20;
-        this.ctx.shadowColor = '#ff6b9d';
-        this.ctx.fillText(`¡${characterName.toUpperCase()} RESCATADO${characterName === 'Julieta' ? 'A' : ''}!`, this.width / 2, 85);
-
-        // Level complete message below
-        this.ctx.shadowBlur = 15;
-        this.ctx.shadowColor = '#2ecc71';
-        this.ctx.font = 'bold 20px "Segoe UI", sans-serif';
-        this.ctx.fillStyle = '#2ecc71';
-        this.ctx.fillText(`¡NIVEL ${level} COMPLETADO!`, this.width / 2, 120);
+        this.ctx.fillText(`¡NIVEL ${level} COMPLETADO!`, this.width / 2, 90);
 
         this.ctx.restore();
     }

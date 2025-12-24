@@ -21,11 +21,14 @@ export class Nephew {
         this.swayOffset = 0;
         this.startX = x;
 
-        // Wind effect properties
-        this.windStrength = Math.random() * 2 + 0.5; // Start with random wind (0.5-2.5)
+        // Wind effect properties - more pronounced wind
+        this.windStrength = Math.random() * 4 + 1.5; // Start with random wind (1.5-5.5)
         this.windDirection = Math.random() > 0.5 ? 1 : -1; // Random initial direction
         this.windChangeTimer = 0;
-        this.windChangeDuration = 60; // Change wind every 60 frames (~1 second)
+        this.windChangeDuration = 45; // Change wind every 45 frames (~0.75 seconds) for more dynamic movement
+
+        // Wind particles for visual effect
+        this.windParticles = [];
 
         // Parachute
         this.parachuteOpen = false;
@@ -470,17 +473,37 @@ export class Nephew {
                 this.windChangeTimer = 0;
                 // Randomly change wind direction
                 this.windDirection = Math.random() > 0.5 ? 1 : -1;
-                // Vary wind strength (0.5 to 2.5)
-                this.windStrength = Math.random() * 2 + 0.5;
+                // Vary wind strength (1.5 to 5.5) - more pronounced
+                this.windStrength = Math.random() * 4 + 1.5;
             }
 
             // Smooth wind effect - gradually apply wind force
             const windForce = Math.sin(this.windChangeTimer / this.windChangeDuration * Math.PI) *
                               this.windStrength * this.windDirection;
 
-            // Gentle swaying motion with wind effect
+            // Gentle swaying motion with stronger wind effect
             this.swayOffset += this.swaySpeed;
-            this.x = this.startX + Math.sin(this.swayOffset) * this.swayAmplitude + windForce * 20;
+            this.x = this.startX + Math.sin(this.swayOffset) * this.swayAmplitude + windForce * 30;
+
+            // Spawn wind particles for visual effect
+            if (Math.random() < 0.3) {
+                this.windParticles.push({
+                    x: this.x + this.width / 2 + (Math.random() - 0.5) * 40,
+                    y: this.y + Math.random() * this.height,
+                    vx: this.windDirection * (2 + Math.random() * 3),
+                    vy: (Math.random() - 0.5) * 0.5,
+                    life: 1,
+                    size: Math.random() * 2 + 1
+                });
+            }
+
+            // Update wind particles
+            this.windParticles = this.windParticles.filter(p => {
+                p.x += p.vx;
+                p.y += p.vy;
+                p.life -= 0.015;
+                return p.life > 0;
+            });
 
             // Fall down slowly
             this.y += this.fallSpeed;
@@ -542,6 +565,16 @@ export class Nephew {
 
     render(ctx) {
         ctx.save();
+
+        // Draw wind particles
+        this.windParticles.forEach(p => {
+            ctx.globalAlpha = p.life * 0.6;
+            ctx.fillStyle = '#e0f0ff';
+            ctx.beginPath();
+            // Draw elongated wind streaks
+            ctx.ellipse(p.x, p.y, p.size * 4, p.size, 0, 0, Math.PI * 2);
+            ctx.fill();
+        });
 
         // Draw sparkles
         this.sparkles.forEach(s => {

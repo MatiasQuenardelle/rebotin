@@ -15,11 +15,14 @@ export class Monster {
         this.swayOffset = 0;
         this.startX = x;
 
-        // Wind effect properties
-        this.windStrength = Math.random() * 2.5 + 0.5; // Start with random wind (0.5-3.0)
+        // Wind effect properties - more pronounced wind
+        this.windStrength = Math.random() * 5 + 2; // Start with random wind (2-7) - stronger for monsters
         this.windDirection = Math.random() > 0.5 ? 1 : -1; // Random initial direction
         this.windChangeTimer = 0;
-        this.windChangeDuration = 40; // Changes more frequently
+        this.windChangeDuration = 35; // Changes more frequently
+
+        // Wind particles for visual effect
+        this.windParticles = [];
 
         // Parachute
         this.parachuteOpen = false;
@@ -40,7 +43,7 @@ export class Monster {
 
     caught() {
         this.state = 'caught';
-        this.createExplosion();
+        // Don't create explosion on monster - paddle will explode instead
     }
 
     createExplosion() {
@@ -143,16 +146,36 @@ export class Monster {
             if (this.windChangeTimer >= this.windChangeDuration) {
                 this.windChangeTimer = 0;
                 this.windDirection = Math.random() > 0.5 ? 1 : -1;
-                this.windStrength = Math.random() * 3 + 0.5; // Stronger wind
+                this.windStrength = Math.random() * 5 + 2; // Stronger wind (2-7)
             }
 
             // Smooth wind effect
             const windForce = Math.sin(this.windChangeTimer / this.windChangeDuration * Math.PI) *
                               this.windStrength * this.windDirection;
 
-            // Erratic swaying motion with wind effect
+            // Erratic swaying motion with stronger wind effect
             this.swayOffset += this.swaySpeed;
-            this.x = this.startX + Math.sin(this.swayOffset) * this.swayAmplitude + windForce * 25;
+            this.x = this.startX + Math.sin(this.swayOffset) * this.swayAmplitude + windForce * 35;
+
+            // Spawn wind particles for visual effect
+            if (Math.random() < 0.35) {
+                this.windParticles.push({
+                    x: this.x + this.width / 2 + (Math.random() - 0.5) * 50,
+                    y: this.y + Math.random() * this.height,
+                    vx: this.windDirection * (2.5 + Math.random() * 4),
+                    vy: (Math.random() - 0.5) * 0.8,
+                    life: 1,
+                    size: Math.random() * 2.5 + 1
+                });
+            }
+
+            // Update wind particles
+            this.windParticles = this.windParticles.filter(p => {
+                p.x += p.vx;
+                p.y += p.vy;
+                p.life -= 0.02;
+                return p.life > 0;
+            });
 
             // Fall down
             this.y += this.fallSpeed;
@@ -177,6 +200,16 @@ export class Monster {
 
     render(ctx) {
         ctx.save();
+
+        // Draw wind particles
+        this.windParticles.forEach(p => {
+            ctx.globalAlpha = p.life * 0.5;
+            ctx.fillStyle = '#d0e0f0';
+            ctx.beginPath();
+            // Draw elongated wind streaks
+            ctx.ellipse(p.x, p.y, p.size * 4.5, p.size, 0, 0, Math.PI * 2);
+            ctx.fill();
+        });
 
         // Draw explosion particles
         this.explosionParticles.forEach(p => {

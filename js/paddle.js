@@ -17,9 +17,48 @@ export class Paddle {
         this.inverseTimer = 0;
         this.sizeModifier = 1; // 1 = normal, >1 = expanded, <1 = shrunk
         this.sizeTimer = 0;
+
+        // Explosion and fire effects
+        this.explosionParticles = [];
+        this.fireParticles = [];
+        this.isExploding = false;
+        this.explosionTimer = 0;
+        this.explosionDuration = 1500; // 1.5 seconds
     }
 
     update(input, deltaTime = 16) {
+        // Update explosion timer
+        if (this.isExploding) {
+            this.explosionTimer += deltaTime;
+            if (this.explosionTimer >= this.explosionDuration) {
+                this.isExploding = false;
+                this.explosionTimer = 0;
+                this.explosionParticles = [];
+                this.fireParticles = [];
+            }
+        }
+
+        // Update explosion particles
+        this.explosionParticles = this.explosionParticles.filter(p => {
+            p.x += p.vx;
+            p.y += p.vy;
+            p.vy += 0.15; // gravity
+            p.vx *= 0.98; // air resistance
+            p.life -= 0.015;
+            return p.life > 0;
+        });
+
+        // Update fire particles
+        this.fireParticles = this.fireParticles.filter(p => {
+            p.x += p.vx;
+            p.y += p.vy;
+            p.vy -= 0.05; // Fire rises
+            p.vx *= 0.95;
+            p.size *= 0.98; // Shrink over time
+            p.life -= 0.012;
+            return p.life > 0 && p.size > 0.5;
+        });
+
         // Update power-up timers
         if (this.inverseTimer > 0) {
             this.inverseTimer -= deltaTime;
@@ -97,8 +136,95 @@ export class Paddle {
         this.sizeTimer = duration;
     }
 
+    explode() {
+        this.isExploding = true;
+        this.explosionTimer = 0;
+
+        const centerX = this.x + this.width / 2;
+        const centerY = this.y + this.height / 2;
+
+        // Create explosion particles (debris from paddle)
+        for (let i = 0; i < 40; i++) {
+            const angle = (i / 40) * Math.PI * 2;
+            const speed = 2 + Math.random() * 4;
+            this.explosionParticles.push({
+                x: centerX,
+                y: centerY,
+                vx: Math.cos(angle) * speed,
+                vy: Math.sin(angle) * speed - 1, // Slight upward bias
+                life: 1,
+                size: Math.random() * 4 + 2,
+                color: ['#ff6600', '#ff8800', '#ffaa00', '#00d4ff', '#0099cc'][Math.floor(Math.random() * 5)]
+            });
+        }
+
+        // Create fire particles
+        for (let i = 0; i < 50; i++) {
+            const offsetX = (Math.random() - 0.5) * this.width;
+            const offsetY = (Math.random() - 0.5) * this.height;
+            this.fireParticles.push({
+                x: centerX + offsetX,
+                y: centerY + offsetY,
+                vx: (Math.random() - 0.5) * 3,
+                vy: -Math.random() * 2 - 1, // Fire rises upward
+                life: 1,
+                size: Math.random() * 6 + 3,
+                color: ['#ff4400', '#ff6600', '#ff8800', '#ffaa00', '#ffcc00'][Math.floor(Math.random() * 5)]
+            });
+        }
+
+        // Add smoke particles
+        for (let i = 0; i < 25; i++) {
+            const offsetX = (Math.random() - 0.5) * this.width * 1.5;
+            const offsetY = (Math.random() - 0.5) * this.height;
+            this.explosionParticles.push({
+                x: centerX + offsetX,
+                y: centerY + offsetY,
+                vx: (Math.random() - 0.5) * 2,
+                vy: -Math.random() * 1.5 - 0.5, // Smoke rises
+                life: 1,
+                size: Math.random() * 8 + 4,
+                color: '#555555',
+                isSmoke: true
+            });
+        }
+    }
+
     render(ctx) {
         ctx.save();
+
+        // Draw fire particles first (behind explosion particles)
+        this.fireParticles.forEach(p => {
+            ctx.globalAlpha = p.life;
+            ctx.fillStyle = p.color;
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = p.color;
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+            ctx.fill();
+        });
+
+        // Draw explosion particles
+        this.explosionParticles.forEach(p => {
+            ctx.globalAlpha = p.life;
+            ctx.fillStyle = p.color;
+
+            if (p.isSmoke) {
+                ctx.shadowBlur = 12;
+                ctx.shadowColor = p.color;
+            } else {
+                ctx.shadowBlur = 6;
+                ctx.shadowColor = p.color;
+            }
+
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+            ctx.fill();
+        });
+
+        // Reset alpha and shadow
+        ctx.globalAlpha = 1;
+        ctx.shadowBlur = 0;
 
         if (this.laserMode) {
             this.laserPulse += 0.15;

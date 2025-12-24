@@ -260,7 +260,35 @@ export class Game {
 
                 if (this.nephew.state === 'lost') {
                     console.log(`[RESCUE_PHASE] Nephew lost!`);
-                    this.state = this.states.CHARACTER_LOST;
+                    this.lives--;
+                    if (this.lives <= 0) {
+                        this.state = this.states.CHARACTER_LOST;
+                    } else {
+                        // Reset nephew for another rescue attempt
+                        this.nephew.state = 'trapped';
+                        this.nephew.parachuteOpen = false;
+                        this.nephew.parachuteSize = 0;
+                        this.nephew.swayOffset = 0;
+                        this.nephew.celebrationTimer = 0;
+                        this.nephew.celebrationComplete = false;
+                        this.nephew.sparkles = [];
+                        this.nephew.hearts = [];
+                        this.nephew.fireworks = [];
+                        this.nephew.confetti = [];
+                        this.nephew.stars = [];
+
+                        // Reposition nephew back in prison brick
+                        if (this.prisonBrick) {
+                            this.nephew.x = this.prisonBrick.x + (this.prisonBrick.width - 16) / 2;
+                            this.nephew.y = this.prisonBrick.y + (this.prisonBrick.height - 20) / 2 + 2;
+                            this.nephew.startX = this.nephew.x;
+                            this.prisonBrick.alive = true;
+                        }
+
+                        this.nephewFreed = false;
+                        this.ball.reset(this.paddle);
+                        // Stay in RESCUE_PHASE to try again
+                    }
                 }
             }
             return;
@@ -461,18 +489,23 @@ export class Game {
 
             // Remove if caught
             if (monster.state === 'caught') {
-                // Penalty for catching a monster
-                this.score = Math.max(0, this.score - 100);
-                this.lives = Math.max(0, this.lives - 1);
-                // Keep monster briefly to show explosion, then remove
-                const hasExplosion = monster.explosionParticles.length > 0;
+                // Apply penalty only once (when caught happens)
+                if (!monster.penaltyApplied) {
+                    this.score = Math.max(0, this.score - 100);
+                    this.lives = Math.max(0, this.lives - 1);
+                    monster.penaltyApplied = true;
 
-                // Only transition to game over after explosion finishes
-                if (this.lives <= 0 && !hasExplosion) {
-                    this.state = this.states.GAME_OVER;
+                    // Trigger paddle explosion instead of monster explosion
+                    this.paddle.explode();
+
+                    // Check for game over after applying penalty
+                    if (this.lives <= 0) {
+                        this.state = this.states.GAME_OVER;
+                    }
                 }
 
-                return hasExplosion;
+                // Keep monster visible briefly, then remove
+                return !this.paddle.isExploding || this.paddle.explosionTimer < 500;
             }
 
             // Remove if escaped
