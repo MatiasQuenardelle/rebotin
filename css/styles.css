@@ -245,21 +245,21 @@ body {
 .left-hud {
     display: none; /* Hidden by default, shown in landscape */
     position: absolute;
-    left: 6px;
+    left: 4px;
     top: 50%;
     transform: translateY(-50%);
     z-index: 10000;
     flex-direction: column;
-    gap: 4px;
+    gap: 3px;
 }
 
 .hud-item {
     background: rgba(10, 10, 26, 0.8);
     border: 1px solid rgba(0, 212, 255, 0.3);
-    border-radius: 6px;
-    padding: 4px 8px;
+    border-radius: 4px;
+    padding: 3px 6px;
     text-align: center;
-    min-width: 40px;
+    min-width: 35px;
 }
 
 .hud-label {
@@ -268,7 +268,7 @@ body {
 
 .hud-value {
     display: block;
-    font-size: 11px;
+    font-size: 10px;
     font-weight: bold;
     color: #fff;
 }
@@ -300,18 +300,18 @@ body {
 .side-controls {
     display: none; /* Hidden by default, shown in landscape */
     position: absolute;
-    right: 10px;
+    right: 6px;
     top: 50%;
     transform: translateY(-50%);
     z-index: 10000;
     flex-direction: column;
-    gap: 8px;
+    gap: 6px;
 }
 
 .control-btn {
-    width: 50px;
-    height: 50px;
-    border-radius: 10px;
+    width: 44px;
+    height: 44px;
+    border-radius: 8px;
     border: 2px solid rgba(0, 212, 255, 0.4);
     background: rgba(10, 10, 26, 0.9);
     color: #fff;
@@ -320,18 +320,18 @@ body {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 2px;
+    gap: 1px;
     transition: all 0.2s ease;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
 }
 
 .control-btn .btn-icon {
-    font-size: 20px;
+    font-size: 18px;
     line-height: 1;
 }
 
 .control-btn .btn-label {
-    font-size: 7px;
+    font-size: 6px;
     font-weight: bold;
     letter-spacing: 0.3px;
 }
@@ -470,13 +470,13 @@ body {
     /* Show left HUD */
     .left-hud {
         display: flex;
-        left: max(8px, env(safe-area-inset-left));
+        left: max(4px, env(safe-area-inset-left));
     }
 
     /* Show side controls */
     .side-controls {
         display: flex;
-        right: max(8px, env(safe-area-inset-right));
+        right: max(6px, env(safe-area-inset-right));
     }
 
     /* Hide weapon wheel - it covers the paddle */

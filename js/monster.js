@@ -152,7 +152,7 @@ export class Monster {
 
             // Erratic swaying motion with wind effect
             this.swayOffset += this.swaySpeed;
-            this.x = this.startX + Math.sin(this.swayOffset) * this.swayAmplitude + windForce * 15;
+            this.x = this.startX + Math.sin(this.swayOffset) * this.swayAmplitude + windForce * 25;
 
             // Fall down
             this.y += this.fallSpeed;
