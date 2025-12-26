@@ -95,7 +95,7 @@ const COLOR_MAP = {
     'C': BRICK_COLORS.cyan
 };
 
-export function createLevel(levelNumber, canvasWidth, characterName = 'Felipe') {
+export function createLevel(levelNumber, canvasWidth, characterName = 'Felipe', speedMultiplier = 1) {
     const pattern = LEVEL_PATTERNS[(levelNumber - 1) % LEVEL_PATTERNS.length];
     const bricks = [];
     let prisonBrick = null;
@@ -169,11 +169,11 @@ export function createLevel(levelNumber, canvasWidth, characterName = 'Felipe') 
 
             if (isPrisonPosition && !prisonBrick) {
                 // Create prison brick at this random position
-                prisonBrick = new PrisonBrick(x, y, brickWidth, brickHeight, characterName);
+                prisonBrick = new PrisonBrick(x, y, brickWidth, brickHeight, characterName, speedMultiplier, canvasWidth);
                 bricks.push(prisonBrick);
             } else if (isMonsterPosition) {
                 // Create monster brick at this position
-                const monsterBrick = new MonsterBrick(x, y, brickWidth, brickHeight);
+                const monsterBrick = new MonsterBrick(x, y, brickWidth, brickHeight, speedMultiplier, canvasWidth);
                 monsterBricks.push(monsterBrick);
                 bricks.push(monsterBrick);
             } else if (char === 'X') {

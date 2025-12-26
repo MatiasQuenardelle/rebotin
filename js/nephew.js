@@ -1,11 +1,13 @@
 export class Nephew {
-    constructor(x, y, characterName = 'Felipe') {
+    constructor(x, y, characterName = 'Felipe', speedMultiplier = 1, canvasWidth = 400) {
         this.x = x;
         this.y = y;
         this.width = 16;
         this.height = 20;
         this.characterName = characterName;
         this.isJulieta = characterName === 'Julieta';
+        this.speedMultiplier = speedMultiplier;
+        this.canvasWidth = canvasWidth;
 
         // States: trapped, falling, landing, rescued, lost
         this.state = 'trapped';
@@ -14,18 +16,24 @@ export class Nephew {
         this.landingTimer = 0;
         this.landingDuration = 1200; // 1.2 seconds to see the landing
 
-        // Falling physics
-        this.fallSpeed = 1.5;
+        // Falling physics - adjusted by speed multiplier
+        // Base fallSpeed is 1.5, scales with difficulty (faster ball = faster fall)
+        this.baseFallSpeed = 1.5;
+        this.fallSpeed = this.baseFallSpeed * (0.7 + this.speedMultiplier * 0.3); // Range: 0.91 (slow) to 2.1 (insane)
         this.swayAmplitude = 15;
         this.swaySpeed = 0.05;
         this.swayOffset = 0;
         this.startX = x;
 
-        // Wind effect properties - more pronounced wind
-        this.windStrength = Math.random() * 4 + 1.5; // Start with random wind (1.5-5.5)
+        // Wind effect properties - adjusted by speed multiplier
+        // Higher difficulty = stronger and more frequent wind changes
+        this.baseWindStrength = 1.5;
+        this.windStrengthRange = 4 * (0.5 + this.speedMultiplier * 0.5); // Range scales with difficulty
+        this.windStrength = Math.random() * this.windStrengthRange + this.baseWindStrength;
         this.windDirection = Math.random() > 0.5 ? 1 : -1; // Random initial direction
         this.windChangeTimer = 0;
-        this.windChangeDuration = 45; // Change wind every 45 frames (~0.75 seconds) for more dynamic movement
+        // Faster wind changes at higher difficulty (45 frames at normal, faster at higher)
+        this.windChangeDuration = Math.max(20, Math.floor(45 / (0.5 + this.speedMultiplier * 0.5)));
 
         // Wind particles for visual effect
         this.windParticles = [];
@@ -473,8 +481,8 @@ export class Nephew {
                 this.windChangeTimer = 0;
                 // Randomly change wind direction
                 this.windDirection = Math.random() > 0.5 ? 1 : -1;
-                // Vary wind strength (1.5 to 5.5) - more pronounced
-                this.windStrength = Math.random() * 4 + 1.5;
+                // Vary wind strength based on difficulty multiplier
+                this.windStrength = Math.random() * this.windStrengthRange + this.baseWindStrength;
             }
 
             // Smooth wind effect - gradually apply wind force
@@ -483,7 +491,12 @@ export class Nephew {
 
             // Gentle swaying motion with stronger wind effect
             this.swayOffset += this.swaySpeed;
-            this.x = this.startX + Math.sin(this.swayOffset) * this.swayAmplitude + windForce * 30;
+            let newX = this.startX + Math.sin(this.swayOffset) * this.swayAmplitude + windForce * 30;
+
+            // Constrain X position to stay within playable area (with padding for character width)
+            const minX = 10;
+            const maxX = this.canvasWidth - this.width - 10;
+            this.x = Math.max(minX, Math.min(maxX, newX));
 
             // Spawn wind particles for visual effect
             if (Math.random() < 0.3) {

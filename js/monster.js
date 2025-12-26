@@ -1,25 +1,30 @@
 export class Monster {
-    constructor(x, y) {
+    constructor(x, y, speedMultiplier = 1, canvasWidth = 400) {
         this.x = x;
         this.y = y;
         this.width = 16;
         this.height = 20;
+        this.speedMultiplier = speedMultiplier;
+        this.canvasWidth = canvasWidth;
 
         // States: trapped, falling, caught, escaped
         this.state = 'trapped';
 
-        // Falling physics (same as nephew but slightly different)
-        this.fallSpeed = 1.8; // Slightly faster than nephew
+        // Falling physics - adjusted by speed multiplier (slightly faster than nephew)
+        this.baseFallSpeed = 1.8;
+        this.fallSpeed = this.baseFallSpeed * (0.7 + this.speedMultiplier * 0.3);
         this.swayAmplitude = 20; // More erratic movement
         this.swaySpeed = 0.08;
         this.swayOffset = 0;
         this.startX = x;
 
-        // Wind effect properties - more pronounced wind
-        this.windStrength = Math.random() * 5 + 2; // Start with random wind (2-7) - stronger for monsters
+        // Wind effect properties - adjusted by speed multiplier (stronger for monsters)
+        this.baseWindStrength = 2;
+        this.windStrengthRange = 5 * (0.5 + this.speedMultiplier * 0.5);
+        this.windStrength = Math.random() * this.windStrengthRange + this.baseWindStrength;
         this.windDirection = Math.random() > 0.5 ? 1 : -1; // Random initial direction
         this.windChangeTimer = 0;
-        this.windChangeDuration = 35; // Changes more frequently
+        this.windChangeDuration = Math.max(15, Math.floor(35 / (0.5 + this.speedMultiplier * 0.5)));
 
         // Wind particles for visual effect
         this.windParticles = [];
@@ -146,7 +151,7 @@ export class Monster {
             if (this.windChangeTimer >= this.windChangeDuration) {
                 this.windChangeTimer = 0;
                 this.windDirection = Math.random() > 0.5 ? 1 : -1;
-                this.windStrength = Math.random() * 5 + 2; // Stronger wind (2-7)
+                this.windStrength = Math.random() * this.windStrengthRange + this.baseWindStrength;
             }
 
             // Smooth wind effect
@@ -155,7 +160,12 @@ export class Monster {
 
             // Erratic swaying motion with stronger wind effect
             this.swayOffset += this.swaySpeed;
-            this.x = this.startX + Math.sin(this.swayOffset) * this.swayAmplitude + windForce * 35;
+            let newX = this.startX + Math.sin(this.swayOffset) * this.swayAmplitude + windForce * 35;
+
+            // Constrain X position to stay within playable area
+            const minX = 10;
+            const maxX = this.canvasWidth - this.width - 10;
+            this.x = Math.max(minX, Math.min(maxX, newX));
 
             // Spawn wind particles for visual effect
             if (Math.random() < 0.35) {

@@ -1,7 +1,7 @@
 import { Nephew } from './nephew.js';
 
 export class PrisonBrick {
-    constructor(x, y, width, height, characterName = 'Felipe') {
+    constructor(x, y, width, height, characterName = 'Felipe', speedMultiplier = 1, canvasWidth = 400) {
         this.x = x;
         this.y = y;
         this.width = width;
@@ -15,7 +15,9 @@ export class PrisonBrick {
         this.nephew = new Nephew(
             x + (width - 16) / 2,
             y + (height - 20) / 2 + 2,
-            characterName
+            characterName,
+            speedMultiplier,
+            canvasWidth
         );
 
         // Animation

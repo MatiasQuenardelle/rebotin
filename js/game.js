@@ -78,7 +78,7 @@ export class Game {
     }
 
     loadLevel(levelNum) {
-        const levelData = createLevel(levelNum, this.canvas.width, this.characterName);
+        const levelData = createLevel(levelNum, this.canvas.width, this.characterName, this.speedMultiplier);
         this.bricks = levelData.bricks;
         this.prisonBrick = levelData.prisonBrick;
         this.nephew = this.prisonBrick ? this.prisonBrick.getNephew() : null;
@@ -269,6 +269,8 @@ export class Game {
                         this.nephew.parachuteOpen = false;
                         this.nephew.parachuteSize = 0;
                         this.nephew.swayOffset = 0;
+                        this.nephew.windChangeTimer = 0;
+                        this.nephew.windParticles = [];
                         this.nephew.celebrationTimer = 0;
                         this.nephew.celebrationComplete = false;
                         this.nephew.sparkles = [];
@@ -287,7 +289,8 @@ export class Game {
 
                         this.nephewFreed = false;
                         this.ball.reset(this.paddle);
-                        // Stay in RESCUE_PHASE to try again
+                        // Go back to PLAYING state to break the prison brick again
+                        this.state = this.states.PLAYING;
                     }
                 }
             }

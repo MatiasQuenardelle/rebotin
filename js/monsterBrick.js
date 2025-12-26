@@ -1,7 +1,7 @@
 import { Monster } from './monster.js';
 
 export class MonsterBrick {
-    constructor(x, y, width = 60, height = 20) {
+    constructor(x, y, width = 60, height = 20, speedMultiplier = 1, canvasWidth = 400) {
         this.x = x;
         this.y = y;
         this.width = width;
@@ -15,7 +15,9 @@ export class MonsterBrick {
         // Monster inside
         this.monster = new Monster(
             x + width / 2 - 8,
-            y + height / 2 - 10
+            y + height / 2 - 10,
+            speedMultiplier,
+            canvasWidth
         );
 
         // Animation
