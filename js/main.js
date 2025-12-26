@@ -54,9 +54,20 @@ if (input.isGyroAvailable() && isMobile) {
     (async () => {
         const enabled = await input.requestGyroPermission();
         if (enabled) {
-            gyroBtn.classList.add('active');
-            gyroBtn.textContent = 'Tilt: ON';
-            tiltBtn.classList.add('active');
+            // Verify the gyro is actually working (important for iPad)
+            const isWorking = await input.verifyGyroWorking();
+            if (isWorking) {
+                gyroBtn.classList.add('active');
+                gyroBtn.textContent = 'Tilt: ON';
+                tiltBtn.classList.add('active');
+            } else {
+                // Gyro permission granted but no sensor data - disable and inform user
+                input.disableGyro();
+                gyroBtn.classList.remove('active');
+                gyroBtn.textContent = 'Tilt: N/A';
+                tiltBtn.classList.add('hidden');
+                console.warn('Gyroscope not available on this device (no sensor data)');
+            }
         }
     })();
 }
@@ -73,9 +84,16 @@ gyroBtn.addEventListener('click', async () => {
         // Turn on (may need permission if first time)
         const enabled = await input.requestGyroPermission();
         if (enabled) {
-            gyroBtn.classList.add('active');
-            gyroBtn.textContent = 'Tilt: ON';
-            tiltBtn.classList.add('active');
+            // Verify the gyro is actually working (important for iPad)
+            const isWorking = await input.verifyGyroWorking();
+            if (isWorking) {
+                gyroBtn.classList.add('active');
+                gyroBtn.textContent = 'Tilt: ON';
+                tiltBtn.classList.add('active');
+            } else {
+                input.disableGyro();
+                alert('Tilt controls are not available on this device. The motion sensors may not be supported or enabled.');
+            }
         } else {
             alert('Could not enable tilt controls. Please allow motion sensor access.');
         }
@@ -94,9 +112,16 @@ tiltBtn.addEventListener('click', async () => {
         // Turn on (may need permission if first time)
         const enabled = await input.requestGyroPermission();
         if (enabled) {
-            gyroBtn.classList.add('active');
-            gyroBtn.textContent = 'Tilt: ON';
-            tiltBtn.classList.add('active');
+            // Verify the gyro is actually working (important for iPad)
+            const isWorking = await input.verifyGyroWorking();
+            if (isWorking) {
+                gyroBtn.classList.add('active');
+                gyroBtn.textContent = 'Tilt: ON';
+                tiltBtn.classList.add('active');
+            } else {
+                input.disableGyro();
+                alert('Tilt controls are not available on this device. The motion sensors may not be supported or enabled.');
+            }
         } else {
             alert('Could not enable tilt controls. Please allow motion sensor access.');
         }

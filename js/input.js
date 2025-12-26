@@ -110,6 +110,9 @@ export class Input {
         if (window.DeviceOrientationEvent) {
             this.gyro.available = true;
         }
+        // Track if we've received valid gyro data
+        this.gyro.hasValidData = false;
+        this.gyro.verificationAttempts = 0;
     }
 
     setupOrientationListener() {
@@ -126,13 +129,40 @@ export class Input {
         window.addEventListener('orientationchange', () => {
             this.updateScreenOrientation();
         });
+        // Additional fallback using resize (helps on iPad)
+        window.addEventListener('resize', () => {
+            this.updateScreenOrientation();
+        });
     }
 
     updateScreenOrientation() {
         if (window.screen && window.screen.orientation) {
-            this.screenOrientation = window.screen.orientation.angle;
+            // Modern API - use type if angle isn't reliable
+            const angle = window.screen.orientation.angle;
+            const type = window.screen.orientation.type;
+
+            // On iPad, use type string as it's more reliable
+            if (type.includes('landscape')) {
+                // Determine which landscape based on type or angle
+                if (type === 'landscape-primary' || angle === 90) {
+                    this.screenOrientation = 90;
+                } else {
+                    this.screenOrientation = -90;
+                }
+            } else {
+                // Portrait
+                this.screenOrientation = 0;
+            }
         } else if (window.orientation !== undefined) {
+            // Legacy fallback
             this.screenOrientation = window.orientation;
+        } else {
+            // Ultimate fallback: detect from window dimensions
+            if (window.innerWidth > window.innerHeight) {
+                this.screenOrientation = 90;  // Assume landscape
+            } else {
+                this.screenOrientation = 0;   // Portrait
+            }
         }
     }
 
@@ -165,12 +195,37 @@ export class Input {
         this.gyro.enabled = true;
         this.useGyroControl = true;
         this.useMouseControl = false;
+        this.gyro.hasValidData = false;
 
         // Only add the listener once
         if (!this.gyroListenerAdded) {
             window.addEventListener('deviceorientation', (e) => this.handleDeviceOrientation(e));
             this.gyroListenerAdded = true;
         }
+    }
+
+    // Verify that gyro is actually receiving sensor data
+    // Returns a promise that resolves to true if working, false if not
+    verifyGyroWorking(timeoutMs = 1500) {
+        return new Promise((resolve) => {
+            // If we already have valid data, return immediately
+            if (this.gyro.hasValidData) {
+                resolve(true);
+                return;
+            }
+
+            const startTime = Date.now();
+            const checkInterval = setInterval(() => {
+                if (this.gyro.hasValidData) {
+                    clearInterval(checkInterval);
+                    resolve(true);
+                } else if (Date.now() - startTime >= timeoutMs) {
+                    clearInterval(checkInterval);
+                    console.warn('Gyroscope enabled but no valid sensor data received');
+                    resolve(false);
+                }
+            }, 100);
+        });
     }
 
     disableGyro() {
@@ -192,9 +247,19 @@ export class Input {
     handleDeviceOrientation(e) {
         if (!this.gyro.enabled) return;
 
-        // Store raw values
-        const gamma = e.gamma || 0;  // left-right tilt (-90 to 90)
-        const beta = e.beta || 0;    // front-back tilt (-180 to 180)
+        // Check if we have actual sensor data (not null/undefined)
+        // iPad Pro and some devices may report DeviceOrientationEvent but with null values
+        const hasGamma = e.gamma !== null && e.gamma !== undefined;
+        const hasBeta = e.beta !== null && e.beta !== undefined;
+
+        // Track if we've ever received valid data
+        if (hasGamma || hasBeta) {
+            this.gyro.hasValidData = true;
+        }
+
+        // Store raw values - use 0 as fallback only if sensor data is unavailable
+        const gamma = hasGamma ? e.gamma : 0;  // left-right tilt (-90 to 90)
+        const beta = hasBeta ? e.beta : 0;    // front-back tilt (-180 to 180)
 
         this.gyro.gamma = gamma;
         this.gyro.beta = beta;
@@ -229,6 +294,25 @@ export class Input {
 
     isGyroEnabled() {
         return this.gyro.enabled;
+    }
+
+    // Check if gyro has received valid data since being enabled
+    hasGyroValidData() {
+        return this.gyro.hasValidData;
+    }
+
+    // Debug method to log current gyro state (useful for troubleshooting iPad issues)
+    debugGyroState() {
+        console.log('Gyro Debug:', {
+            available: this.gyro.available,
+            enabled: this.gyro.enabled,
+            hasValidData: this.gyro.hasValidData,
+            gamma: this.gyro.gamma,
+            beta: this.gyro.beta,
+            tilt: this.gyro.tilt,
+            screenOrientation: this.screenOrientation,
+            useGyroControl: this.useGyroControl
+        });
     }
 
     isLaunchPressed() {
