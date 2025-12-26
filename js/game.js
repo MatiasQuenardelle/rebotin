@@ -333,7 +333,7 @@ export class Game {
             this.stickyTimer -= deltaTime;
             // Allow launching from sticky with space/click
             if (this.ball.isStuck && this.input.isLaunchPressed()) {
-                this.ball.launchFromSticky();
+                this.ball.launchFromSticky(this.paddle);
             }
             if (this.stickyTimer <= 0) {
                 this.stickyActive = false;

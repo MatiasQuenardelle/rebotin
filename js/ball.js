@@ -21,6 +21,7 @@ export class Ball {
         // Sticky mode (ball sticks to paddle)
         this.stickyMode = false;
         this.isStuck = false;
+        this.stickyOffsetX = 0; // Offset from paddle center when stuck
     }
 
     setSpeedMultiplier(multiplier) {
@@ -29,7 +30,13 @@ export class Ball {
 
     update(paddle) {
         if (!this.launched) {
-            this.x = paddle.getCenterX();
+            if (this.isStuck) {
+                // Keep ball at the offset position where it landed
+                this.x = paddle.x + this.stickyOffsetX;
+            } else {
+                // Normal pre-launch: center on paddle
+                this.x = paddle.getCenterX();
+            }
             this.y = paddle.y - this.radius - 2;
             return;
         }
@@ -67,6 +74,10 @@ export class Ball {
         if (this.stickyMode && !this.isStuck) {
             this.isStuck = true;
             this.launched = false;
+            // Store the offset from paddle left edge where the ball landed
+            this.stickyOffsetX = this.x - paddle.x;
+            // Clamp to paddle bounds
+            this.stickyOffsetX = Math.max(this.radius, Math.min(this.stickyOffsetX, paddle.width - this.radius));
             this.dx = 0;
             this.dy = 0;
             return;
@@ -118,10 +129,22 @@ export class Ball {
         this.color = '#ffffff'; // Back to white
     }
 
-    launchFromSticky() {
+    launchFromSticky(paddle) {
         if (this.isStuck) {
             this.isStuck = false;
-            this.launch();
+            this.launched = true;
+
+            // Calculate launch angle based on where ball is on paddle (same as bounce physics)
+            const hitPoint = this.stickyOffsetX / paddle.width;
+            const angle = (hitPoint - 0.5) * 140 * (Math.PI / 180); // -70 to +70 degrees from center
+
+            this.dx = Math.sin(angle) * this.speed;
+            this.dy = -Math.abs(Math.cos(angle) * this.speed);
+
+            // Ensure minimum vertical speed
+            if (Math.abs(this.dy) < this.speed * 0.3) {
+                this.dy = -this.speed * 0.3;
+            }
         }
     }
 

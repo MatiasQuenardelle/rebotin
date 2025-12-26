@@ -5,9 +5,12 @@ export class PowerUp {
         this.width = 24;
         this.height = 24;
 
-        // Random type if not specified
-        const types = ['laser', 'inverse', 'expand', 'shrink', 'destroyer', 'sticky', 'life'];
-        this.type = type || types[Math.floor(Math.random() * types.length)];
+        // Random type if not specified (laser has higher weight for more frequent drops)
+        const weightedTypes = [
+            'laser', 'laser', 'laser',  // 3x weight for laser
+            'inverse', 'expand', 'shrink', 'destroyer', 'sticky', 'life'
+        ];
+        this.type = type || weightedTypes[Math.floor(Math.random() * weightedTypes.length)];
 
         this.fallSpeed = 2;
         this.rotation = 0;
@@ -112,16 +115,41 @@ export class PowerUp {
     drawIcon(ctx) {
         switch (this.config.icon) {
             case 'laser':
-                // Lightning bolt shape
+                // Dual laser beams shooting upward with gun barrel
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 2.5;
+                ctx.lineCap = 'round';
+
+                // Left laser beam
                 ctx.beginPath();
-                ctx.moveTo(-3, -8);
-                ctx.lineTo(4, -2);
-                ctx.lineTo(0, -2);
-                ctx.lineTo(3, 8);
-                ctx.lineTo(-4, 2);
-                ctx.lineTo(0, 2);
-                ctx.closePath();
-                ctx.fill();
+                ctx.moveTo(-4, 8);
+                ctx.lineTo(-4, -8);
+                ctx.stroke();
+
+                // Right laser beam
+                ctx.beginPath();
+                ctx.moveTo(4, 8);
+                ctx.lineTo(4, -8);
+                ctx.stroke();
+
+                // Arrow tips on beams (shooting upward)
+                ctx.beginPath();
+                ctx.moveTo(-4, -8);
+                ctx.lineTo(-6, -4);
+                ctx.moveTo(-4, -8);
+                ctx.lineTo(-2, -4);
+                ctx.stroke();
+
+                ctx.beginPath();
+                ctx.moveTo(4, -8);
+                ctx.lineTo(2, -4);
+                ctx.moveTo(4, -8);
+                ctx.lineTo(6, -4);
+                ctx.stroke();
+
+                // Paddle/gun base at bottom
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(-7, 6, 14, 3);
                 break;
 
             case 'inverse':
